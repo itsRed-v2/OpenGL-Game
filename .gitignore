@@ -1,0 +1,5 @@
+# Don't commit built files !
+build/
+
+# MacOS things
+.DS_Store
