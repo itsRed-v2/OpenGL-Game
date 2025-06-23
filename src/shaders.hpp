@@ -3,5 +3,13 @@
 
 using namespace std;
 
-GLuint createShader(string filename, GLenum type);
-GLuint createProgram(string vertexShaderFile, string fragmentShaderFile);
+class Shader {
+private:
+    GLuint ID;
+
+public:
+    Shader(string vertexShaderPath, string fragmentShaderPath);
+
+    void use();
+    GLint getUniformLocation(const char* uniformName);
+};

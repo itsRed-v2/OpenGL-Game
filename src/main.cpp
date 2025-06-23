@@ -49,65 +49,32 @@ int main() {
     
     glClearColor(0.2, 0.3, 0.3, 1.0);
 
-    GLuint rectangleProgram = createProgram("assets/vertex.glsl", "assets/rectFragment.glsl");
-    GLuint triangleProgram = createProgram("assets/vertex.glsl", "assets/triFragment.glsl");
+    Shader shader("assets/vertex.glsl", "assets/fragment.glsl");
+    shader.use();
 
-    float rect_vertices[] = {
-        -0.5, 0.5, 0,
-        0.5, 0.5, 0,
-        0.5, -0.5, 0,
-        -0.5, -0.5, 0
-    };
-    unsigned int rect_indices[] = {
-        0, 1, 2,
-        0, 2, 3
+    float vertices[] = {
+        // position       // color
+         0.5, -0.5, 0.0,  1.0, 0.0, 0.0,
+        -0.5, -0.5, 0.0,  0.0, 1.0, 0.0,
+         0.0,  0.5, 0.0,  0.0, 0.0, 1.0
     };
 
-    GLuint rect_VAO;
-    glGenVertexArrays(1, &rect_VAO);
-    glBindVertexArray(rect_VAO);
+    GLuint VAO;
+    glGenVertexArrays(1, &VAO);
+    glBindVertexArray(VAO);
 
-    GLuint rect_VBO;
-    glGenBuffers(1, &rect_VBO);
-    glBindBuffer(GL_ARRAY_BUFFER, rect_VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(rect_vertices), rect_vertices, GL_STATIC_DRAW);
+    GLuint VBO;
+    glGenBuffers(1, &VBO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), 0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
-
-    GLuint rect_EBO;
-    glGenBuffers(1, &rect_EBO);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, rect_EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(rect_indices), rect_indices, GL_STATIC_DRAW);
-
-
-    float triangle_vertices[] = {
-        0, 0.75, 0,
-        0.25, 0, 0,
-        -0.25, 0, 0
-    };
-
-    GLuint tri_VAO;
-    glGenVertexArrays(1, &tri_VAO);
-    glBindVertexArray(tri_VAO);
-
-    GLuint tri_VBO;
-    glGenBuffers(1, &tri_VBO);
-    glBindBuffer(GL_ARRAY_BUFFER, tri_VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(triangle_vertices), triangle_vertices, GL_STATIC_DRAW);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), 0);
-    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
 
     while (!glfwWindowShouldClose(window)) {
         glClear(GL_COLOR_BUFFER_BIT);
-        
-        glUseProgram(rectangleProgram);
-        glBindVertexArray(rect_VAO);
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-
-        glUseProgram(triangleProgram);
-        glBindVertexArray(tri_VAO);
         glDrawArrays(GL_TRIANGLES, 0, 3);
 
         glfwSwapBuffers(window);

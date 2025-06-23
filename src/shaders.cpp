@@ -9,11 +9,22 @@
 
 using namespace std;
 
-GLuint createShader(string filename, GLenum type) {
-    ifstream sourceFile (filename);
-    stringstream buffer;
-    buffer << sourceFile.rdbuf();
-    string sourceCode = buffer.str();
+GLuint createShader(string path, GLenum type) {
+    ifstream sourceFile;
+    sourceFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+    string sourceCode;
+    
+    try {
+        sourceFile.open(path);
+        stringstream buffer;
+        buffer << sourceFile.rdbuf();
+        sourceCode = buffer.str();
+    } catch (std::ifstream::failure e) {
+        std::cerr << "Error: could not read shader file " << path << std::endl;
+        glfwTerminate();
+        exit(1);
+    }
+
     const char* cStyleSourceCode = sourceCode.c_str();
 
     GLuint shader = glCreateShader(type);
@@ -25,7 +36,7 @@ GLuint createShader(string filename, GLenum type) {
     glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
     if (!success) {
         glGetShaderInfoLog(shader, sizeof(infoLog), NULL, infoLog);
-        std::cout << "Error when compiling shader at " << filename << ": " << infoLog << std::endl;
+        std::cerr << "Error when compiling shader at " << path << ": " << infoLog << std::endl;
         glfwTerminate();
         exit(1);
     }
@@ -33,21 +44,21 @@ GLuint createShader(string filename, GLenum type) {
     return shader;
 }
 
-GLuint createProgram(string vertexShaderFile, string fragmentShaderFile) {
-    GLuint vertexShader = createShader(vertexShaderFile, GL_VERTEX_SHADER);
-    GLuint fragmentShader = createShader(fragmentShaderFile, GL_FRAGMENT_SHADER);
+Shader::Shader(string vertexShaderPath, string fragmentShaderPath) {
+    GLuint vertexShader = createShader(vertexShaderPath, GL_VERTEX_SHADER);
+    GLuint fragmentShader = createShader(fragmentShaderPath, GL_FRAGMENT_SHADER);
 
-    GLuint shaderProgram = glCreateProgram();
-    glAttachShader(shaderProgram, vertexShader);
-    glAttachShader(shaderProgram, fragmentShader);
-    glLinkProgram(shaderProgram);
+    ID = glCreateProgram();
+    glAttachShader(ID, vertexShader);
+    glAttachShader(ID, fragmentShader);
+    glLinkProgram(ID);
 
     int success;
     char infoLog[512];
-    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
+    glGetProgramiv(ID, GL_LINK_STATUS, &success);
     if (!success) {
-        glGetProgramInfoLog(shaderProgram, sizeof(infoLog), NULL, infoLog);
-        std::cout << "Error when linking shader program for " << vertexShaderFile << " and " << fragmentShaderFile
+        glGetProgramInfoLog(ID, sizeof(infoLog), NULL, infoLog);
+        std::cerr << "Error when linking shader program for " << vertexShaderPath << " and " << fragmentShaderPath
                 << ": " << infoLog << std::endl;
         glfwTerminate();
         exit(1);
@@ -56,6 +67,19 @@ GLuint createProgram(string vertexShaderFile, string fragmentShaderFile) {
     // Once linked, we don't need the shaders anymore
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
+}
 
-    return shaderProgram;
+void Shader::use() {
+    glUseProgram(ID);
+}
+
+GLint Shader::getUniformLocation(const char* uniformName) {
+    GLint location = glGetUniformLocation(ID, uniformName);
+    if (location == -1) {
+        std::cerr << "Could not find uniform location for uniform: " << uniformName << std::endl;
+        glfwTerminate();
+        exit(1);
+    }
+
+    return location;
 }
