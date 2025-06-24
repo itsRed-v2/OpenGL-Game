@@ -1,3 +1,6 @@
+#ifndef SHADER_HPP
+#define SHADER_HPP
+
 #include <GLFW/glfw3.h>
 #include <string>
 
@@ -12,4 +15,8 @@ public:
 
     void use();
     GLint getUniformLocation(const char* uniformName);
+
+    void setFloatUniform(const char* uniformName, float value);
 };
+
+#endif

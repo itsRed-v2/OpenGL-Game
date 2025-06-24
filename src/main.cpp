@@ -4,10 +4,19 @@
 #include <GLFW/glfw3.h>
 
 #include "shaders.hpp"
+#include "fpsCounter.hpp"
+
+#define ENABLE_VSYNC GLFW_TRUE
 
 void onKey(GLFWwindow* window, int key, int scancode, int action, int mods) {
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
         glfwSetWindowShouldClose(window, GLFW_TRUE);
+    }
+
+    static int swapInterval = 1;
+    if (key == GLFW_KEY_V && action == GLFW_PRESS) {
+        swapInterval = !swapInterval;
+        glfwSwapInterval(swapInterval);
     }
 }
 
@@ -34,7 +43,6 @@ int main() {
     }
     glfwMakeContextCurrent(window);
     glfwSetKeyCallback(window, onKey);
-    glfwSwapInterval(1);
 
     if (!gladLoadGL(glfwGetProcAddress)) {
         std::cout << "Failed to initialize GLAD" << std::endl;
@@ -46,8 +54,10 @@ int main() {
     int width, height;
     glfwGetFramebufferSize(window, &width, &height);
     glViewport(0, 0, width, height);
-    
+
     glClearColor(0.2, 0.3, 0.3, 1.0);
+    glfwSwapInterval(ENABLE_VSYNC ? 1 : 0);
+    FpsCounter fpsCounter(0.5, window);
 
     Shader shader("assets/vertex.glsl", "assets/fragment.glsl");
     shader.use();
@@ -74,11 +84,15 @@ int main() {
     glEnableVertexAttribArray(1);
 
     while (!glfwWindowShouldClose(window)) {
+        float time = glfwGetTime();
+        shader.setFloatUniform("time", time);
+
         glClear(GL_COLOR_BUFFER_BIT);
         glDrawArrays(GL_TRIANGLES, 0, 3);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
+        fpsCounter.tick();
     }
 
     glfwTerminate();

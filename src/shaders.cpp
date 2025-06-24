@@ -83,3 +83,7 @@ GLint Shader::getUniformLocation(const char* uniformName) {
 
     return location;
 }
+
+void Shader::setFloatUniform(const char* uniformName, float value) {
+    glUniform1f(getUniformLocation(uniformName), value);
+}
