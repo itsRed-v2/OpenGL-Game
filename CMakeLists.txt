@@ -11,6 +11,7 @@ add_executable(Voxels
             src/main.cpp
             src/shaders.cpp
             src/fpsCounter.cpp
+            src/texture2D.cpp
             )
 
 # Add GLAD
@@ -24,6 +25,7 @@ target_link_libraries(Voxels PUBLIC glfw)
 # Add include directories
 target_include_directories(Voxels PUBLIC
                            "${PROJECT_SOURCE_DIR}/lib/glad/include"
+                           "${PROJECT_SOURCE_DIR}/lib/stb"
                            "${PROJECT_SOURCE_DIR}/src"
                            )
 

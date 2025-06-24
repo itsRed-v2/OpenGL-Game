@@ -1,6 +1,7 @@
 #ifndef FPS_COUNTER_HPP
 #define FPS_COUNTER_HPP
 
+#include <glad/gl.h>
 #include <GLFW/glfw3.h>
 #include <string>
 

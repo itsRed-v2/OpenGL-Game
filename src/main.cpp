@@ -5,6 +5,7 @@
 
 #include "shaders.hpp"
 #include "fpsCounter.hpp"
+#include "texture2D.hpp"
 
 #define ENABLE_VSYNC GLFW_TRUE
 
@@ -59,14 +60,29 @@ int main() {
     glfwSwapInterval(ENABLE_VSYNC ? 1 : 0);
     FpsCounter fpsCounter(0.5, window);
 
-    Shader shader("assets/vertex.glsl", "assets/fragment.glsl");
+    Shader shader ("assets/shaders/vertex.glsl", "assets/shaders/fragment.glsl");
     shader.use();
 
+    Texture2D containerTexture ("assets/textures/container.jpg", GL_TEXTURE0);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+    Texture2D faceTexture ("assets/textures/awesomeface.png", GL_TEXTURE1);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+    shader.setIntUniform("texture0", 0);
+    shader.setIntUniform("texture1", 1);
+
     float vertices[] = {
-        // position       // color
-         0.5, -0.5, 0.0,  1.0, 0.0, 0.0,
-        -0.5, -0.5, 0.0,  0.0, 1.0, 0.0,
-         0.0,  0.5, 0.0,  0.0, 0.0, 1.0
+        // position        // color         // Texture coord
+         1.0,  1.0, 0.0,   1.0, 0.0, 0.0,   2.0, 2.0,
+         1.0, -1.0, 0.0,   0.0, 1.0, 0.0,   2.0, -1.0,
+        -1.0, -1.0, 0.0,   0.0, 0.0, 1.0,   -1.0, -1.0,
+        -1.0,  1.0, 0.0,   1.0, 1.0, 0.0,   -1.0, 2.0,
+    };
+    unsigned int indices[] = {
+        3, 0, 1,
+        1, 2, 3
     };
 
     GLuint VAO;
@@ -78,17 +94,21 @@ int main() {
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+    glEnableVertexAttribArray(2);
+
+    GLuint EBO;
+    glGenBuffers(1, &EBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
     while (!glfwWindowShouldClose(window)) {
-        float time = glfwGetTime();
-        shader.setFloatUniform("time", time);
-
         glClear(GL_COLOR_BUFFER_BIT);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
         glfwSwapBuffers(window);
         glfwPollEvents();

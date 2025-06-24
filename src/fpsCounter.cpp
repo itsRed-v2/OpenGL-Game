@@ -1,5 +1,3 @@
-#include <glad/gl.h>
-
 #include "fpsCounter.hpp"
 
 FpsCounter::FpsCounter(float sampleDuration, GLFWwindow* window) : sampleDuration(sampleDuration), window(window) {
@@ -13,8 +11,10 @@ void FpsCounter::tick() {
         currentFrameCount = 0;
         lastSampleStart = time;
 
-        char windowTitle[30];
-        snprintf(windowTitle, 30, "Voxels ! - FPS: %d", currentFPS);
+        float millisecondsPerFrame = 1000.0 / currentFPS;
+
+        char windowTitle[40];
+        snprintf(windowTitle, 40, "Voxels ! - FPS: %d / mspf: %.1f", currentFPS, millisecondsPerFrame);
         glfwSetWindowTitle(window, windowTitle);
     }
 

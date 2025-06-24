@@ -3,8 +3,6 @@
 #include <sstream>
 #include <iostream>
 
-#include <glad/gl.h>
-
 #include "shaders.hpp"
 
 using namespace std;
@@ -86,4 +84,8 @@ GLint Shader::getUniformLocation(const char* uniformName) {
 
 void Shader::setFloatUniform(const char* uniformName, float value) {
     glUniform1f(getUniformLocation(uniformName), value);
+}
+
+void Shader::setIntUniform(const char* uniformName, int value) {
+    glUniform1i(getUniformLocation(uniformName), value);
 }
