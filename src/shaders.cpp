@@ -89,3 +89,7 @@ void Shader::setFloatUniform(const char* uniformName, float value) {
 void Shader::setIntUniform(const char* uniformName, int value) {
     glUniform1i(getUniformLocation(uniformName), value);
 }
+
+void Shader::setVec2fUniform(const char* uniformName, float x, float y) {
+    glUniform2f(getUniformLocation(uniformName), x, y);
+}

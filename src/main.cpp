@@ -21,6 +21,63 @@ void onKey(GLFWwindow* window, int key, int scancode, int action, int mods) {
     }
 }
 
+int windowPosX, windowPosY, windowWidth, windowHeight;
+
+void onWindowMove(GLFWwindow* window, int newX, int newY) {
+    windowPosX = newX;
+    windowPosY = newY;
+}
+
+void onWindowResize(GLFWwindow* window, int newWidth, int newHeight) {
+    windowWidth = newWidth;
+    windowHeight = newHeight;
+
+    int width, height;
+    glfwGetFramebufferSize(window, &width, &height);
+    glViewport(0, 0, width, height);
+}
+
+void processMovements(GLFWwindow* window, float deltaTime) {
+    int movementX = 0, movementY = 0, resizeX = 0, resizeY = 0;
+    
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+        movementY -= 1;
+    }
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+        movementY += 1;
+    }
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+        movementX -= 1;
+    }
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+        movementX += 1;
+    }
+
+    movementX *= 3;
+    movementY *= 3;
+
+    if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) {
+        movementX -= 2;
+        movementY -= 2;
+        resizeX += 4;
+        resizeY += 4;
+    }
+    if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS && windowHeight > 50 && windowWidth > 50) {
+        movementX += 2;
+        movementY += 2;
+        resizeX -= 4;
+        resizeY -= 4;
+    }
+
+    if (movementX != 0 || movementY != 0) {
+        glfwSetWindowPos(window, windowPosX + movementX, windowPosY + movementY);
+    }
+    if (resizeX != 0 || resizeY != 0) {
+        glfwSetWindowSize(window, windowWidth + resizeX, windowHeight + resizeY);
+    }
+
+}
+
 int main() {
     if (!glfwInit()) {
         std::cerr << "Error during GLFW initialization." << std::endl;
@@ -35,6 +92,7 @@ int main() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+    glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
     GLFWwindow* window = glfwCreateWindow(640, 480, "Voxels !", NULL, NULL);
     if (!window) {
@@ -44,6 +102,8 @@ int main() {
     }
     glfwMakeContextCurrent(window);
     glfwSetKeyCallback(window, onKey);
+    glfwSetWindowPosCallback(window, onWindowMove);
+    glfwSetWindowSizeCallback(window, onWindowResize);
 
     if (!gladLoadGL(glfwGetProcAddress)) {
         std::cout << "Failed to initialize GLAD" << std::endl;
@@ -75,10 +135,10 @@ int main() {
 
     float vertices[] = {
         // position        // color         // Texture coord
-         1.0,  1.0, 0.0,   1.0, 0.0, 0.0,   2.0, 2.0,
-         1.0, -1.0, 0.0,   0.0, 1.0, 0.0,   2.0, -1.0,
-        -1.0, -1.0, 0.0,   0.0, 0.0, 1.0,   -1.0, -1.0,
-        -1.0,  1.0, 0.0,   1.0, 1.0, 0.0,   -1.0, 2.0,
+         900,  300, 0.0,   1.0, 0.0, 0.0,   1.0, 1.0,
+         900,  600, 0.0,   0.0, 1.0, 0.0,   1.0, 0.0,
+         600,  600, 0.0,   0.0, 0.0, 1.0,   0.0, 0.0,
+         600,  300, 0.0,   1.0, 1.0, 0.0,   0.0, 1.0,
     };
     unsigned int indices[] = {
         3, 0, 1,
@@ -106,9 +166,17 @@ int main() {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
+    glfwGetWindowPos(window, &windowPosX, &windowPosY);
+    glfwGetWindowSize(window, &windowWidth, &windowHeight);
+
     while (!glfwWindowShouldClose(window)) {
+        shader.setVec2fUniform("windowSize", windowWidth, windowHeight);
+        shader.setVec2fUniform("windowPos", windowPosX, windowPosY);
+
         glClear(GL_COLOR_BUFFER_BIT);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+        processMovements(window, fpsCounter.getLastFrameDuration());
 
         glfwSwapBuffers(window);
         glfwPollEvents();

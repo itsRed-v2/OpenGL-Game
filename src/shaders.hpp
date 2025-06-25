@@ -19,6 +19,7 @@ public:
 
     void setFloatUniform(const char* uniformName, float value);
     void setIntUniform(const char* uniformName, int value);
+    void setVec2fUniform(const char* uniformName, float x, float y);
 };
 
 #endif

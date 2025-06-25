@@ -14,10 +14,13 @@ private:
     unsigned int currentFrameCount;
     unsigned int currentFPS;
     GLFWwindow* window;
+    float lastFrameDate;
+    float lastFrameDuration;
 
 public:
     FpsCounter(float sampleDuration, GLFWwindow* window);
     void tick();
+    float getLastFrameDuration();
 };
 
 #endif
