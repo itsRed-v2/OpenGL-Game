@@ -6,6 +6,10 @@ FpsCounter::FpsCounter(float sampleDuration, GLFWwindow* window) : sampleDuratio
 
 void FpsCounter::tick() {
     float time = glfwGetTime();
+
+    lastFrameDuration = time - lastFrameDate;
+    lastFrameDate = time;
+
     if (time - lastSampleStart >= sampleDuration) {
         currentFPS = currentFrameCount / sampleDuration;
         currentFrameCount = 0;
@@ -19,4 +23,8 @@ void FpsCounter::tick() {
     }
 
     currentFrameCount++;
+}
+
+float FpsCounter::getLastFrameDuration() {
+    return lastFrameDuration;
 }
