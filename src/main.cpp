@@ -3,6 +3,10 @@
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>
 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 #include "shaders.hpp"
 #include "fpsCounter.hpp"
 #include "texture2D.hpp"
@@ -75,10 +79,10 @@ int main() {
 
     float vertices[] = {
         // position        // color         // Texture coord
-         1.0,  1.0, 0.0,   1.0, 0.0, 0.0,   2.0, 2.0,
-         1.0, -1.0, 0.0,   0.0, 1.0, 0.0,   2.0, -1.0,
-        -1.0, -1.0, 0.0,   0.0, 0.0, 1.0,   -1.0, -1.0,
-        -1.0,  1.0, 0.0,   1.0, 1.0, 0.0,   -1.0, 2.0,
+         0.5,  0.5, 0.0,   1.0, 0.0, 0.0,   1.0, 1.0,
+         0.5, -0.5, 0.0,   0.0, 1.0, 0.0,   1.0, 0.0,
+        -0.5, -0.5, 0.0,   0.0, 0.0, 1.0,   0.0, 0.0,
+        -0.5,  0.5, 0.0,   1.0, 1.0, 0.0,   0.0, 1.0,
     };
     unsigned int indices[] = {
         3, 0, 1,
@@ -106,7 +110,16 @@ int main() {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
+
     while (!glfwWindowShouldClose(window)) {
+        float angle = glfwGetTime() * glm::pi<float>() / 2;
+        glm::mat4 trans = glm::mat4(1.0f);
+        trans = glm::translate(trans, glm::vec3(0.5, -0.5, 0.0));
+        trans = glm::rotate(trans, angle, glm::vec3(0.0, 0.0, 1.0));
+        trans = glm::scale(trans, glm::vec3(0.5, 0.5, 1.0));
+
+        shader.setMatrix4fUniform("transform", trans);
+
         glClear(GL_COLOR_BUFFER_BIT);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 

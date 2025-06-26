@@ -25,7 +25,7 @@ target_link_libraries(Voxels PUBLIC glfw)
 # Add include directories
 target_include_directories(Voxels PUBLIC
                            "${PROJECT_SOURCE_DIR}/lib/glad/include"
-                           "${PROJECT_SOURCE_DIR}/lib/stb"
+                           "${PROJECT_SOURCE_DIR}/lib/header-only"
                            "${PROJECT_SOURCE_DIR}/src"
                            )
 

@@ -3,6 +3,10 @@
 
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>
+
+#include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 #include <string>
 
 using namespace std;
@@ -19,6 +23,7 @@ public:
 
     void setFloatUniform(const char* uniformName, float value);
     void setIntUniform(const char* uniformName, int value);
+    void setMatrix4fUniform(const char* uniformName, glm::mat4 matrix);
 };
 
 #endif
