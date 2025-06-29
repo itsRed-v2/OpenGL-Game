@@ -10,27 +10,51 @@
 #include "shaders.hpp"
 #include "fpsCounter.hpp"
 #include "texture2D.hpp"
+#include "camera.hpp"
 
 #define ENABLE_VSYNC GLFW_TRUE
-#define MOVEMENT_SPEED 5.0f
 
-int frameBufferWidth, frameBufferHeight;
+Camera* cameraPtr { NULL };
 
 void onKey(GLFWwindow* window, int key, int scancode, int action, int mods) {
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
         glfwSetWindowShouldClose(window, GLFW_TRUE);
     }
 
-    static int swapInterval = 1;
+    static int swapInterval = ENABLE_VSYNC;
     if (key == GLFW_KEY_V && action == GLFW_PRESS) {
         swapInterval = !swapInterval;
         glfwSwapInterval(swapInterval);
     }
 }
 
-void onWindowResize(GLFWwindow* window, int newWidth, int newHeight) {
-    glfwGetFramebufferSize(window, &frameBufferWidth, &frameBufferHeight);
-    glViewport(0, 0, frameBufferWidth, frameBufferHeight);
+void onFrameBufferResize(GLFWwindow* window, int width, int height) {
+    glViewport(0, 0, width, height);
+
+    if (cameraPtr == NULL) {
+        std::cerr << "Error: cameraPtr is uninitialized." << std::endl;
+        glfwTerminate();
+        exit(1);
+    }
+    cameraPtr->setFrameBufferSize(width, height);
+}
+
+void onCursorMove(GLFWwindow* window, double newX, double newY) {
+    if (cameraPtr == NULL) {
+        std::cerr << "Error: cameraPtr is uninitialized." << std::endl;
+        glfwTerminate();
+        exit(1);
+    }
+    cameraPtr->onCursorMove(newX, newY);
+}
+
+void onScroll(GLFWwindow* window, double offsetX, double offsetY) {
+    if (cameraPtr == NULL) {
+        std::cerr << "Error: cameraPtr is uninitialized." << std::endl;
+        glfwTerminate();
+        exit(1);
+    }
+    cameraPtr->onScroll(offsetX, offsetY);
 }
 
 int main() {
@@ -55,22 +79,39 @@ int main() {
         return 1;
     }
     glfwMakeContextCurrent(window);
-    glfwSetKeyCallback(window, onKey);
-    glfwSetWindowSizeCallback(window, onWindowResize);
 
     if (!gladLoadGL(glfwGetProcAddress)) {
-        std::cout << "Failed to initialize GLAD" << std::endl;
-        return -1;
+        std::cerr << "Failed to initialize GLAD" << std::endl;
+        return 1;
     }
 
     std::cout << "OpenGL version: " << glGetString(GL_VERSION) << std::endl;
 
+    int frameBufferWidth, frameBufferHeight;
     glfwGetFramebufferSize(window, &frameBufferWidth, &frameBufferHeight);
     glViewport(0, 0, frameBufferWidth, frameBufferHeight);
 
-    glClearColor(0.2, 0.3, 0.3, 1.0);
+    double cursorX, cursorY;
+    glfwGetCursorPos(window, &cursorX, &cursorY);
+    Camera camera (cursorX, cursorY, frameBufferWidth, frameBufferHeight);
+    cameraPtr = &camera;
+
+    glfwSetKeyCallback(window, onKey);
+    glfwSetFramebufferSizeCallback(window, onFrameBufferResize);
+    glfwSetCursorPosCallback(window, onCursorMove);
+    glfwSetScrollCallback(window, onScroll);
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
+    if (glfwRawMouseMotionSupported()) {
+        glfwSetInputMode(window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
+    } else {
+        std::cout << "[WARN] Raw mouse motion is not available on this system." << std::endl;
+    }
+
+    glClearColor(0.2, 0.3, 0.3, 0.8);
     glEnable(GL_DEPTH_TEST);
     glfwSwapInterval(ENABLE_VSYNC ? 1 : 0);
+
     FpsCounter fpsCounter(0.5, window);
 
     Shader shader ("assets/shaders/vertex.glsl", "assets/shaders/fragment.glsl");
@@ -145,31 +186,37 @@ int main() {
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
 
-    glm::vec3 camPos = glm::vec3(0.0f, 0.0f, 5.0f);
+    glm::vec3 cubePositions[] = {
+        glm::vec3( 0.0f,  0.0f,  0.0f), 
+        glm::vec3( 2.0f,  5.0f, -15.0f), 
+        glm::vec3(-1.5f, -2.2f, -2.5f),  
+        glm::vec3(-3.8f, -2.0f, -12.3f),  
+        glm::vec3( 2.4f, -0.4f, -3.5f),  
+        glm::vec3(-1.7f,  3.0f, -7.5f),  
+        glm::vec3( 1.3f, -2.0f, -2.5f),  
+        glm::vec3( 1.5f,  2.0f, -2.5f), 
+        glm::vec3( 1.5f,  0.2f, -1.5f), 
+        glm::vec3(-1.3f,  1.0f, -1.5f)  
+    };
 
     while (!glfwWindowShouldClose(window)) {
         float deltaTime = fpsCounter.getLastFrameDuration();
-        if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-            camPos.z -= MOVEMENT_SPEED * deltaTime;
-        if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-            camPos.z += MOVEMENT_SPEED * deltaTime;
-        if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-            camPos.x -= MOVEMENT_SPEED * deltaTime;
-        if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-            camPos.x += MOVEMENT_SPEED * deltaTime;
-
-        float aspect = static_cast<float>(frameBufferWidth) / static_cast<float>(frameBufferHeight);
-        glm::mat4 projection = glm::perspective(glm::radians(45.0f), aspect, 0.1f, 100.0f);
-        glm::mat4 view = glm::mat4(1.0f);
-        view = glm::translate(view, -camPos);
-        glm::mat4 model = glm::mat4(1.0f);
-        float angle = glfwGetTime() * glm::pi<float>() / 2;
-        model = glm::rotate(model, angle, glm::vec3(0.0, 1.0, 0.0));
-
-        shader.setMatrix4fUniform("transform", projection * view * model);
+        camera.processInputs(window, deltaTime);
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
+
+        glm::mat4 projectionView = camera.getProjectionViewMatrix();
+
+        for (int i = 0; i < 10; i++) {
+            float angle = 20.0 * i;
+            glm::mat4 model = glm::mat4(1.0f);
+            model = glm::translate(model, cubePositions[i]);
+            model = glm::rotate(model, glm::radians(angle), glm::vec3(0.5, 1.0, 5.0));
+
+            shader.setMatrix4fUniform("transform", projectionView * model);
+
+            glDrawArrays(GL_TRIANGLES, 0, 36);
+        }
 
         glfwSwapBuffers(window);
         glfwPollEvents();

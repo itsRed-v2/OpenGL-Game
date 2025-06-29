@@ -12,6 +12,7 @@ add_executable(Voxels
             src/shaders.cpp
             src/fpsCounter.cpp
             src/texture2D.cpp
+            src/camera.cpp
             )
 
 # Add GLAD
