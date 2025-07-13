@@ -87,7 +87,7 @@ int main() {
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
-    GLFWwindow* window = glfwCreateWindow(640, 480, "Voxels !", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(960, 720, "Voxels !", NULL, NULL);
     if (!window) {
         std::cerr << "GLFW: window or OpenGL context creation failed" << std::endl;
         glfwTerminate();
@@ -138,8 +138,14 @@ int main() {
 
     Shader lightingShader ("assets/shaders/lighting.vs", "assets/shaders/lighting.fs");
     lightingShader.use();
-    lightingShader.setVec3Uniform("lightColor", 1.0f, 1.0f, 1.0f);
-    lightingShader.setVec3Uniform("objectColor", 1.0f, 0.5f, 0.31f);
+    lightingShader.setVec3Uniform("light.ambient", 0.2f, 0.2f, 0.2f);
+    lightingShader.setVec3Uniform("light.diffuse", 0.5f, 0.5f, 0.5f);
+    lightingShader.setVec3Uniform("light.specular", 1.0f, 1.0f, 1.0f);
+
+    lightingShader.setVec3Uniform("material.ambient", 1.0f, 0.5f, 0.31f);
+    lightingShader.setVec3Uniform("material.diffuse", 1.0f, 0.5f, 0.31f);
+    lightingShader.setVec3Uniform("material.specular", 0.5f, 0.5f, 0.5f);
+    lightingShader.setFloatUniform("material.shininess", 32.0f);
 
     Shader lightCubeShader ("assets/shaders/light.vs", "assets/shaders/light.fs");
 
@@ -226,7 +232,7 @@ int main() {
 
         projection = camera.getProjectionMatrix();
         view = camera.getViewMatrix();
-        
+
         // Rendering the light cube
         // lightPos = glm::vec3(1.2f, 1.0f, 2.0f + 1.0f * (float)glm::sin(glfwGetTime()));
         model = glm::mat4(1.0f);
@@ -254,6 +260,11 @@ int main() {
         lightingShader.setMatrix4fUniform("model", model);
 
         glBindVertexArray(objectVAO);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(3, -1, 1));
+        lightingShader.setMatrix4fUniform("model", model);
         glDrawArrays(GL_TRIANGLES, 0, 36);
 
         glfwSwapBuffers(window);
