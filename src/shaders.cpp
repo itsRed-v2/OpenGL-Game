@@ -93,3 +93,11 @@ void Shader::setIntUniform(const char* uniformName, int value) {
 void Shader::setMatrix4fUniform(const char* uniformName, glm::mat4 matrix) {
     glUniformMatrix4fv(getUniformLocation(uniformName), 1, GL_FALSE, glm::value_ptr(matrix));
 }
+
+void Shader::setVec3Uniform(const char* uniformName, float x, float y, float z) {
+    glUniform3f(getUniformLocation(uniformName), x, y, z);
+}
+
+void Shader::setVec3Uniform(const char* uniformName, glm::vec3 vector) {
+    glUniform3f(getUniformLocation(uniformName), vector.x, vector.y, vector.z);
+}

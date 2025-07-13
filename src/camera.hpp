@@ -8,8 +8,10 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 class Camera {
-private:
+public:
     glm::vec3 position;
+
+private:
     float yaw;
     float pitch;
     float fov;
@@ -20,10 +22,15 @@ private:
 public:
     Camera(double initialCursorX, double initialCursorY, int frameBufferWidth, int frameBufferHeight);
     void processInputs(GLFWwindow* window, float deltaTime);
-    glm::mat4 getProjectionViewMatrix();
+
     void onCursorMove(double newX, double newY);
     void onScroll(double ossetX, double offsetY);
+
     void setFrameBufferSize(int frameBufferWidth, int frameBufferHeight);
+    void syncCursorPosition(GLFWwindow* window);
+
+    glm::mat4 getProjectionMatrix();
+    glm::mat4 getViewMatrix();
 };
 
 #endif

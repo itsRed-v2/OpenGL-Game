@@ -40,7 +40,7 @@ void Camera::onScroll(double ossetX, double offsetY) {
 }
 
 void Camera::processInputs(GLFWwindow* window, float deltaTime) {
-    glm::vec3 relativeMovement = glm::vec3(0.0, 0.0, 0.0);
+    glm::vec3 relativeMovement(0.0, 0.0, 0.0);
 
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
         relativeMovement.z -= MOVEMENT_SPEED * deltaTime;
@@ -57,7 +57,7 @@ void Camera::processInputs(GLFWwindow* window, float deltaTime) {
 
     // rotate the camera-relative movement by yaw degrees around Y-axis to get world-relative movement
     float radYaw = glm::radians(yaw);
-    glm::vec3 movement = glm::vec3(
+    glm::vec3 movement(
         relativeMovement.x * cos(radYaw) - relativeMovement.z * sin(radYaw),
         relativeMovement.y,
         relativeMovement.x * sin(radYaw) + relativeMovement.z * cos(radYaw)
@@ -70,18 +70,24 @@ void Camera::processInputs(GLFWwindow* window, float deltaTime) {
     }
 }
 
-glm::mat4 Camera::getProjectionViewMatrix() {
+glm::mat4 Camera::getProjectionMatrix() {
     float aspect = static_cast<float>(frameBufferWidth) / static_cast<float>(frameBufferHeight);
-    glm::mat4 projection = glm::perspective(glm::radians(fov), aspect, 0.1f, 100.0f);
+    return glm::perspective(glm::radians(fov), aspect, 0.1f, 100.0f);;
+}
 
+glm::mat4 Camera::getViewMatrix() {
     glm::mat4 view = glm::mat4(1.0f);
     view = glm::rotate(view, glm::radians(pitch), glm::vec3(1.0, 0.0, 0.0));
     view = glm::rotate(view, glm::radians(yaw), glm::vec3(0.0, 1.0, 0.0));
     view = glm::translate(view, -position);
-    return projection * view;
+    return view;
 }
 
 void Camera::setFrameBufferSize(int width, int height) {
     frameBufferWidth = width;
     frameBufferHeight = height;
+}
+
+void Camera::syncCursorPosition(GLFWwindow* window) {
+    glfwGetCursorPos(window, &cursorX, &cursorY);
 }
