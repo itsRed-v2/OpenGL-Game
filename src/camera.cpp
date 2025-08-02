@@ -83,6 +83,17 @@ glm::mat4 Camera::getViewMatrix() {
     return view;
 }
 
+glm::vec3 Camera::getFrontVector() {
+    float radYaw = glm::radians(yaw);
+    float radPitch = glm::radians(pitch);
+    glm::vec3 dir(
+        sin(radYaw) * cos(-radPitch),
+        sin(-radPitch),
+        - cos(radYaw) * cos(-radPitch)
+    );
+    return dir;
+}
+
 void Camera::setFrameBufferSize(int width, int height) {
     frameBufferWidth = width;
     frameBufferHeight = height;
