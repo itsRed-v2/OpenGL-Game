@@ -4,7 +4,7 @@
 
 #include "texture2D.hpp"
 
-Texture2D::Texture2D(std::string path, GLenum textureUnit) {
+Texture2D::Texture2D(std::string path, TextureType type, GLenum textureUnit): path(path), type(type) {
     stbi_set_flip_vertically_on_load(true); // Because OpenGL interprets images upside down.
 
     int width, height, channelCount;

@@ -9,10 +9,12 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 # Make an executable named Voxels from source files
 add_executable(Voxels
             src/main.cpp
-            src/shaders.cpp
+            src/shader.cpp
             src/fpsCounter.cpp
             src/texture2D.cpp
             src/camera.cpp
+            src/mesh.cpp
+            src/model.cpp
             )
 
 # Add GLAD
@@ -23,9 +25,15 @@ target_link_libraries(Voxels PUBLIC glad)
 add_subdirectory(lib/glfw-3.4)
 target_link_libraries(Voxels PUBLIC glfw)
 
+# add assimp
+add_subdirectory(lib/assimp)
+target_link_libraries(Voxels PUBLIC assimp)
+
 # Add include directories
 target_include_directories(Voxels PUBLIC
                            "${PROJECT_SOURCE_DIR}/lib/glad/include"
+                           "${PROJECT_SOURCE_DIR}/lib/assimp/include"
+                           "${CMAKE_BINARY_DIR}/lib/assimp/include"
                            "${PROJECT_SOURCE_DIR}/lib/header-only"
                            "${PROJECT_SOURCE_DIR}/src"
                            )

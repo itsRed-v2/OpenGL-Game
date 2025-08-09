@@ -5,12 +5,20 @@
 #include <GLFW/glfw3.h>
 #include <string>
 
+enum TextureType {
+    DIFFUSE,
+    SPECULAR
+};
+
 class Texture2D {
 private:
     GLuint ID;
 
 public:
-    Texture2D(std::string path, GLenum textureUnit);
+    TextureType type;
+    std::string path;
+
+    Texture2D(std::string path, TextureType type, GLenum textureUnit);
     void bind(GLenum textureUnit);
 };
 
