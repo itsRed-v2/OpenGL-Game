@@ -7,10 +7,12 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include "shaders.hpp"
+#include "shader.hpp"
 #include "fpsCounter.hpp"
 #include "texture2D.hpp"
 #include "camera.hpp"
+#include "chunk.hpp"
+#include "world.hpp"
 
 #define ENABLE_VSYNC GLFW_TRUE
 
@@ -136,138 +138,77 @@ int main() {
 
     FpsCounter fpsCounter(0.5, window);
 
-    Texture2D containerDiffuseMap("assets/textures/container2.png", GL_TEXTURE0);
-    Texture2D containerSpecularMap("assets/textures/container2_specular.png", GL_TEXTURE1);
+    Texture2D testTexture("assets/textures/test-16px.png", GL_TEXTURE0);
 
     Shader lightingShader ("assets/shaders/lighting.vs", "assets/shaders/lighting.fs");
     lightingShader.use();
-    lightingShader.setIntUniform("material.diffuse", 0);
-    lightingShader.setIntUniform("material.specular", 1);
-    lightingShader.setFloatUniform("material.shininess", 64.0f);
-
-    Shader lightCubeShader ("assets/shaders/light.vs", "assets/shaders/light.fs");
+    lightingShader.setIntUniform("material.texture", 0);
 
     float vertices[] = {
-        // positions          // normals           // texture coords
-        -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 0.0f,
-        0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 0.0f,
-        0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 1.0f,
-        0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 1.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 0.0f,
-
-        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   0.0f, 0.0f,
-        0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   1.0f, 0.0f,
-        0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   1.0f, 1.0f,
-        0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   1.0f, 1.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   0.0f, 1.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   0.0f, 0.0f,
-
-        -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
-        -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  1.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
-        -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  0.0f, 0.0f,
-        -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
-
-        0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
-        0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f,
-        0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
-        0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
-        0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 0.0f,
-        0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
-
-        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 1.0f,
-        0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 1.0f,
-        0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 0.0f,
-        0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 0.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 0.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 1.0f,
-
-        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 1.0f,
-        0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 1.0f,
-        0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 0.0f,
-        0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 0.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 0.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 1.0f
+        // Front face
+        0, 0, 1, 0, 0,
+        1, 0, 1, 1, 0,
+        0, 1, 1, 0, 1,
+        0, 1, 1, 0, 1,
+        1, 0, 1, 1, 0,
+        1, 1, 1, 1, 1,
+        // Back face
+        1, 0, 0, 0, 0,
+        0, 0, 0, 1, 0,
+        1, 1, 0, 0, 1,
+        1, 1, 0, 0, 1,
+        0, 0, 0, 1, 0,
+        0, 1, 0, 1, 1,
+        // Right face,
+        1, 0, 1, 0, 0,
+        1, 0, 0, 1, 0,
+        1, 1, 1, 0, 1,
+        1, 1, 1, 0, 1,
+        1, 0, 0, 1, 0,
+        1, 1, 0, 1, 1,
+        // Left face
+        0, 0, 0, 0, 0,
+        0, 0, 1, 1, 0,
+        0, 1, 0, 0, 1,
+        0, 1, 0, 0, 1,
+        0, 0, 1, 1, 0,
+        0, 1, 1, 1, 1,
+        // Top face
+        0, 1, 1, 0, 0,
+        1, 1, 1, 1, 0,
+        0, 1, 0, 0, 1,
+        0, 1, 0, 0, 1,
+        1, 1, 1, 1, 0,
+        1, 1, 0, 1, 1,
+        // Bottom face,
+        0, 0, 0, 0, 0,
+        1, 0, 0, 1, 0,
+        0, 0, 1, 0, 1,
+        0, 0, 1, 0, 1,
+        1, 0, 0, 1, 0,
+        1, 0, 1, 1, 1,
     };
 
-    // Setting up VAO for object
-    GLuint objectVAO;
-    glGenVertexArrays(1, &objectVAO);
-    glBindVertexArray(objectVAO);
+    // Setting up VAO for cube
+    GLuint cubeVAO;
+    glGenVertexArrays(1, &cubeVAO);
+    glBindVertexArray(cubeVAO);
 
     GLuint VBO;
     glGenBuffers(1, &VBO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-    glEnableVertexAttribArray(2);
-    
-    // Setting up VAO for light
-    GLuint lightCubeVAO;
-    glGenVertexArrays(1, &lightCubeVAO);
-    glBindVertexArray(lightCubeVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
 
     // Setting scene up
+    camera.position = glm::vec3(0.0, 12.0, 0.0);
+    World world;
 
-    camera.position = glm::vec3(0.0, 1.0, 5.0);
-
-    glm::vec3 cubePositions[] = {
-        glm::vec3( 0.0f,  0.0f,  0.0f),
-        glm::vec3( 2.0f,  5.0f, -15.0f),
-        glm::vec3(-1.5f, -2.2f, -2.5f),
-        glm::vec3(-3.8f, -2.0f, -12.3f),
-        glm::vec3( 2.4f, -0.4f, -3.5f),
-        glm::vec3(-1.7f,  3.0f, -7.5f),
-        glm::vec3( 1.3f, -2.0f, -2.5f),
-        glm::vec3( 1.5f,  2.0f, -2.5f),
-        glm::vec3( 1.5f,  0.2f, -1.5f),
-        glm::vec3(-1.3f,  1.0f, -1.5f)
-    };
-
-    glm::vec3 pointLightPositions[] = {
-        glm::vec3( 0.7f,  0.2f,  2.0f),
-        glm::vec3( 2.3f, -3.3f, -4.0f),
-        glm::vec3(-4.0f,  2.0f, -12.0f),
-        glm::vec3( 0.0f,  0.0f, -3.0f)
-    }; 
-
-    lightingShader.use();
-    lightingShader.setVec3Uniform("directionalLight.direction", glm::normalize(glm::vec3(1.0, -1.0, 1.0)));
-    lightingShader.setVec3Uniform("directionalLight.diffuse", 0.5, 1.0, 0.5);
-    lightingShader.setVec3Uniform("directionalLight.specular", 0.5, 1.0, 0.5);
-
-    lightingShader.setVec3Uniform("spotLight.diffuse", 1.0f, 0.5f, 0.5f);
-    lightingShader.setVec3Uniform("spotLight.specular", 0.8f, 0.4f, 0.4f);
-    lightingShader.setFloatUniform("spotLight.constant", 1.0f);
-    lightingShader.setFloatUniform("spotLight.linear", 0.045f);
-    lightingShader.setFloatUniform("spotLight.quadratic", 0.0075f);
-    lightingShader.setFloatUniform("spotLight.innerCutoff", glm::cos(glm::radians(12.5f)));
-    lightingShader.setFloatUniform("spotLight.outerCutoff", glm::cos(glm::radians(15.5f)));
-
-    for (int i = 0; i < 4; i++) {
-        string lightId = "pointLights[";
-        lightId.push_back('0' + i);
-        lightId.push_back(']');
-        lightingShader.setVec3Uniform((lightId + ".position").c_str(), pointLightPositions[i]);
-        lightingShader.setVec3Uniform((lightId + ".diffuse").c_str(), 0.5f, 0.5f, 1.0f);
-        lightingShader.setVec3Uniform((lightId + ".specular").c_str(), 0.25f, 0.25f, 0.5f);
-        lightingShader.setFloatUniform((lightId + ".constant").c_str(), 1.0f);
-        lightingShader.setFloatUniform((lightId + ".linear").c_str(), 0.045f);
-        lightingShader.setFloatUniform((lightId + ".quadratic").c_str(), 0.0075f);
-    }
-
-    glm::mat4 projection, view, model;
+    glm::mat4 projection, view;
 
     while (!glfwWindowShouldClose(window)) {
         float deltaTime = fpsCounter.getLastFrameDuration();
@@ -278,42 +219,12 @@ int main() {
         projection = camera.getProjectionMatrix();
         view = camera.getViewMatrix();
 
-        // Rendering the light cubes
-        lightCubeShader.use();
-        lightCubeShader.setMatrix4fUniform("projection", projection);
-        lightCubeShader.setMatrix4fUniform("view", view);
-
-        glBindVertexArray(lightCubeVAO);
-
-        for (const glm::vec3 &pos : pointLightPositions) {
-            model = glm::mat4(1.0f);
-            model = glm::translate(model, pos);
-            model = glm::scale(model, glm::vec3(0.2));
-            
-            lightCubeShader.setMatrix4fUniform("model", model);
-            glDrawArrays(GL_TRIANGLES, 0, 36);
-        }
-
-        // Rendering the objects
+        // Rendering the world
         lightingShader.use();
         lightingShader.setMatrix4fUniform("projection", projection);
-        lightingShader.setMatrix4fUniform("view", view);
-        lightingShader.setVec3Uniform("camPos", camera.position);
+        lightingShader.setMatrix4fUniform("view", view); 
 
-        lightingShader.setVec3Uniform("spotLight.direction", camera.getFrontVector());
-        lightingShader.setVec3Uniform("spotLight.position", camera.position);
-
-        glBindVertexArray(objectVAO);
-
-        for(unsigned int i = 0; i < 10; i++) {
-            glm::mat4 model = glm::mat4(1.0f);
-            model = glm::translate(model, cubePositions[i]);
-            float angle = 20.0f * i;
-            model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
-            lightingShader.setMatrix4fUniform("model", model);
-
-            glDrawArrays(GL_TRIANGLES, 0, 36);
-        }
+        world.draw(lightingShader, cubeVAO);
 
         glfwSwapBuffers(window);
         glfwPollEvents();

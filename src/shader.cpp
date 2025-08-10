@@ -3,7 +3,7 @@
 #include <sstream>
 #include <iostream>
 
-#include "shaders.hpp"
+#include "shader.hpp"
 
 using namespace std;
 
