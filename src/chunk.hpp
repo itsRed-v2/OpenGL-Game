@@ -24,4 +24,6 @@ public:
     void draw(Shader &shader, GLint cubeVAO);
 };
 
+Vec2i blockPosToChunkPos(Vec3i blockPos);
+
 #endif

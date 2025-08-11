@@ -16,6 +16,7 @@ add_executable(Voxels
             src/chunk.cpp
             src/world.cpp
             src/math/vectors.cpp
+            src/math/intersection.cpp
             )
 
 # Add GLAD

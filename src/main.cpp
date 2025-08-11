@@ -140,9 +140,11 @@ int main() {
 
     Texture2D testTexture("assets/textures/test-16px.png", GL_TEXTURE0);
 
-    Shader lightingShader ("assets/shaders/lighting.vs", "assets/shaders/lighting.fs");
-    lightingShader.use();
-    lightingShader.setIntUniform("material.texture", 0);
+    Shader cubeShader ("assets/shaders/lighting.vs", "assets/shaders/lighting.fs");
+    cubeShader.use();
+    cubeShader.setIntUniform("material.texture", 0);
+
+    Shader dotShader ("assets/shaders/dot.vs", "assets/shaders/dot.fs");
 
     float vertices[] = {
         // Front face
@@ -204,11 +206,22 @@ int main() {
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
 
+    // Setting up vertex objects for point
+    float pointVertex[] = { 0, 0, 0 };
+
+    GLuint dotVAO, dotVBO;
+    glGenVertexArrays(1, &dotVAO);
+    glBindVertexArray(dotVAO);
+    glGenBuffers(1, &VBO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(pointVertex), pointVertex, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+
     // Setting scene up
     camera.position = glm::vec3(0.0, 12.0, 0.0);
     World world;
 
-    glm::mat4 projection, view;
+    glm::mat4 projection, view, model;
 
     while (!glfwWindowShouldClose(window)) {
         float deltaTime = fpsCounter.getLastFrameDuration();
@@ -220,11 +233,37 @@ int main() {
         view = camera.getViewMatrix();
 
         // Rendering the world
-        lightingShader.use();
-        lightingShader.setMatrix4fUniform("projection", projection);
-        lightingShader.setMatrix4fUniform("view", view); 
+        cubeShader.use();
+        cubeShader.setMatrix4fUniform("projection", projection);
+        cubeShader.setMatrix4fUniform("view", view); 
 
-        world.draw(lightingShader, cubeVAO);
+        world.draw(cubeShader, cubeVAO);
+
+        // Raycasting
+        Ray camRay(camera.position, camera.getFrontVector());
+        HitResult hit = world.rayCast(camRay);
+        if (hit.success) {
+            glBindVertexArray(dotVAO);
+            glPointSize(10);
+            model = glm::mat4(1.0f);
+            model = glm::translate(model, hit.hitPoint);
+            dotShader.use();
+            dotShader.setMatrix4fUniform("projection", projection);
+            dotShader.setMatrix4fUniform("view", view); 
+            dotShader.setMatrix4fUniform("model", model); 
+            glDrawArrays(GL_POINTS, 0, 1);
+
+            glBindVertexArray(cubeVAO);
+            model = glm::mat4(1.0f);
+            Vec3i blockHit = hit.blockHitPos;
+            model = glm::translate(model, glm::vec3(blockHit.x, blockHit.y, blockHit.z));
+            model = glm::translate(model, glm::vec3(-0.05));
+            model = glm::scale(model, glm::vec3(1.1));
+            dotShader.setMatrix4fUniform("model", model); 
+            glDrawArrays(GL_TRIANGLES, 0, 36);
+            
+            glBindVertexArray(0);
+        }
 
         glfwSwapBuffers(window);
         glfwPollEvents();

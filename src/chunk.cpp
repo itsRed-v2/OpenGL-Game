@@ -23,10 +23,20 @@ Chunk::Chunk(Vec2i chunkCoordinate): chunkCoordinate(chunkCoordinate) {
 }
 
 Block Chunk::getBlock(int x, int y, int z) {
+    if (x < 0 || x >= CHUNK_SIZE 
+            || y < 0 || y >= CHUNK_HEIGHT
+            || z < 0 || z >= CHUNK_SIZE)
+        throw out_of_range("Block position out of range in chunk");
+    
     return content[x][z][y];
 }
 
 void Chunk::setBlock(int x, int y, int z, Block block) {
+    if (x < 0 || x >= CHUNK_SIZE 
+            || y < 0 || y >= CHUNK_HEIGHT
+            || z < 0 || z >= CHUNK_SIZE)
+        throw out_of_range("Block position out of range in chunk");
+
     content[x][z][y] = block;
 }
 
@@ -55,4 +65,10 @@ void Chunk::draw(Shader &shader, GLint cubeVAO) {
     }
 
     glBindVertexArray(0);
+}
+
+Vec2i blockPosToChunkPos(Vec3i blockPos) {
+    int32_t chunkX = blockPos.x >= 0 ? (blockPos.x / CHUNK_SIZE) : ((blockPos.x + 1) / CHUNK_SIZE) - 1;
+    int32_t chunkZ = blockPos.z >= 0 ? (blockPos.z / CHUNK_SIZE) : ((blockPos.z + 1) / CHUNK_SIZE) - 1;
+    return Vec2i(chunkX, chunkZ);
 }

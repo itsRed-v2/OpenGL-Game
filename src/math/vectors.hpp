@@ -4,21 +4,34 @@
 #include <cstdint>
 #include <unordered_map>
 
+#include <glm/glm.hpp>
+
 using namespace std;
 
 struct Vec3i {
     int32_t x;
     int32_t y;
     int32_t z;
+
+    Vec3i();
+    Vec3i(int32_t x, int32_t y, int32_t z);
+    Vec3i(float x, float y, float z);
+    Vec3i(glm::vec3 pos);
+
+    int32_t & operator[](size_t index);
+    bool operator==(const Vec3i &other) const;
 };
 
 struct Vec2i {
     int32_t x;
     int32_t y;
-};
 
-bool operator==(const Vec3i &a, const Vec3i &b);
-bool operator==(const Vec2i &a, const Vec2i &b);
+    Vec2i();
+    Vec2i(int32_t x, int32_t y);
+    
+    int32_t & operator[](size_t index);
+    bool operator==(const Vec2i &other) const;
+};
 
 template<>
 struct std::hash<Vec2i> {

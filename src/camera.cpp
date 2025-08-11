@@ -2,9 +2,12 @@
 
 #include "camera.hpp"
 
-#define MOVEMENT_SPEED 5.0f
+#define MOVEMENT_SPEED 10.0f
 #define MOUSE_SENSITIVITY 0.1f
 #define ZOOM_SENSITIVITY 0.5f
+
+#define NEAR_PLANE 0.1f
+#define FAR_PLANE 1000.0f
 
 Camera::Camera(double initialCursorX, double initialCursorY, int frameBufferWidth, int frameBufferHeight)
         : cursorX(initialCursorX), cursorY(initialCursorY), frameBufferWidth(frameBufferWidth), frameBufferHeight(frameBufferHeight) {
@@ -72,7 +75,7 @@ void Camera::processInputs(GLFWwindow* window, float deltaTime) {
 
 glm::mat4 Camera::getProjectionMatrix() {
     float aspect = static_cast<float>(frameBufferWidth) / static_cast<float>(frameBufferHeight);
-    return glm::perspective(glm::radians(fov), aspect, 0.1f, 100.0f);;
+    return glm::perspective(glm::radians(fov), aspect, NEAR_PLANE, FAR_PLANE);
 }
 
 glm::mat4 Camera::getViewMatrix() {
