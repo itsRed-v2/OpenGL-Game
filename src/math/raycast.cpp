@@ -2,6 +2,7 @@
 
 #include <limits>
 #include <algorithm>
+#include <stdexcept>
 
 Ray::Ray(glm::vec3 origin, glm::vec3 direction): origin(origin), direction(glm::normalize(direction)) {}
 
@@ -36,7 +37,7 @@ std::optional<HitResult> rayCubeIntersection(const Ray &ray, Vec3i blockPos) {
     else if (tmin == t2y) blockFace = BlockFace::UP;
     else if (tmin == t1z) blockFace = BlockFace::NORTH;
     else if (tmin == t2z) blockFace = BlockFace::SOUTH;
-    else throw runtime_error("Could not determine block face in ray/cube intersection");
+    else throw std::runtime_error("Could not determine block face in ray/cube intersection");
 
     glm::vec3 hitPoint = origin + (direction * tmin);
     return HitResult{ hitPoint, tmin, blockPos, blockFace };

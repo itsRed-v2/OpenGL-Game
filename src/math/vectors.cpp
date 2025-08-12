@@ -1,6 +1,7 @@
 #include "vectors.hpp"
 
 #include <string>
+#include <stdexcept>
 
 Vec3i::Vec3i(): x(0), y(0), z(0) {}
 
@@ -15,7 +16,7 @@ int32_t & Vec3i::operator[](size_t index) {
         case 0: return x;
         case 1: return y;
         case 2: return z;
-        default: throw out_of_range("Vec3i can only be indexed with values between 0 and 2, got " + std::to_string(index));
+        default: throw std::out_of_range("Vec3i can only be indexed with values between 0 and 2, got " + std::to_string(index));
     }
 }
 
@@ -58,7 +59,7 @@ int32_t & Vec2i::operator[](size_t index) {
     switch (index) {
         case 0: return x;
         case 1: return y;
-        default: throw out_of_range("Vec2i can only be indexed with values between 0 and 1, got " + std::to_string(index));
+        default: throw std::out_of_range("Vec2i can only be indexed with values between 0 and 1, got " + std::to_string(index));
     }
 }
 

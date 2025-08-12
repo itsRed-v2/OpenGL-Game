@@ -9,23 +9,24 @@
 
 class Camera {
 public:
-    glm::vec3 position;
+    glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f);
 
 private:
-    float yaw;
-    float pitch;
-    float fov;
+    float yaw = 0.0f;
+    float pitch = 0.0f;
+    float fov = 45.0f;
     float aspect;
     glm::mat4 projection;
 
     double cursorX, cursorY;
+    bool shouldSkipNextCursorMove = true;
 
     void updateProjectionMatrix();
 
 public:
     Camera(GLFWwindow* window);
 
-    void syncCursorPosition(GLFWwindow* window);
+    void skipNextCursorMove();
     void updateAspect(GLFWwindow* window);
 
     void onCursorMove(double newX, double newY);

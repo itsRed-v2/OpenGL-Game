@@ -10,16 +10,11 @@
 #define FAR_PLANE 1000.0f
 
 Camera::Camera(GLFWwindow* window) {
-    position = glm::vec3(0.0, 0.0, 0.0);
-    yaw = 0.0f;
-    pitch = 0.0f;
-    fov = 45.0f;
-    syncCursorPosition(window);
     updateAspect(window);
 }
 
-void Camera::syncCursorPosition(GLFWwindow* window) {
-    glfwGetCursorPos(window, &cursorX, &cursorY);
+void Camera::skipNextCursorMove() {
+    shouldSkipNextCursorMove = true;
 }
 
 void Camera::updateAspect(GLFWwindow* window) {
@@ -35,6 +30,13 @@ void Camera::updateProjectionMatrix() {
 }
 
 void Camera::onCursorMove(double newX, double newY) {
+    if (shouldSkipNextCursorMove) {
+        shouldSkipNextCursorMove = false;
+        cursorX = newX;
+        cursorY = newY;
+        return;
+    }
+
     double deltaX = newX - cursorX;
     double deltaY = newY - cursorY;
     cursorX = newX;

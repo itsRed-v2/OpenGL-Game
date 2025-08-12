@@ -1,5 +1,7 @@
 #include "world.hpp"
 
+#include <stdexcept>
+
 World::World() {
     for (int32_t x = -1; x < 2; x++) {
         for (int32_t z = -1; z < 2; z++) {
@@ -38,7 +40,7 @@ Block World::getBlock(Vec3i pos) {
 
 void World::setBlock(Vec3i pos, Block block) {
     if (!isInWorld(pos)) {
-        throw invalid_argument("Trying to set block outside of world");
+        throw std::invalid_argument("Trying to set block outside of world");
     }
 
     Vec2i chunkCoordinate = blockPosToChunkPos(pos);

@@ -45,7 +45,7 @@ void InputManager::onKey(int key, int scancode, int action, int mods) {
         if (cursorFree) {
             cursorFree = false;
             glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-            camera.syncCursorPosition(window);
+            camera.skipNextCursorMove();
         } else {
             cursorFree = true;
             glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);

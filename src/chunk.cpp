@@ -1,5 +1,7 @@
 #include "chunk.hpp"
 
+#include <stdexcept>
+
 Chunk::Chunk(Vec2i chunkCoordinate): chunkCoordinate(chunkCoordinate) {
     // Initialize the content array with air.
     for (int x = 0; x < CHUNK_SIZE; x++) {
@@ -26,7 +28,7 @@ Block Chunk::getBlock(int x, int y, int z) {
     if (x < 0 || x >= CHUNK_SIZE 
             || y < 0 || y >= CHUNK_HEIGHT
             || z < 0 || z >= CHUNK_SIZE)
-        throw out_of_range("Block position out of range in chunk");
+        throw std::out_of_range("Block position out of range in chunk");
     
     return content[x][z][y];
 }
@@ -35,7 +37,7 @@ void Chunk::setBlock(int x, int y, int z, Block block) {
     if (x < 0 || x >= CHUNK_SIZE 
             || y < 0 || y >= CHUNK_HEIGHT
             || z < 0 || z >= CHUNK_SIZE)
-        throw out_of_range("Block position out of range in chunk");
+        throw std::out_of_range("Block position out of range in chunk");
 
     content[x][z][y] = block;
 }
