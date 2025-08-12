@@ -28,7 +28,8 @@ void EventCallbacks::onMouseButton(GLFWwindow* window, int button, int action, i
 
 // InputManager implementation
 
-InputManager::InputManager(GLFWwindow* window, World &world, Camera &camera): window(window), world(world), camera(camera) {}
+InputManager::InputManager(GLFWwindow* window, World &world, Camera &camera, Hud &hud): 
+        window(window), world(world), camera(camera), hud(hud) {}
 
 void InputManager::onKey(int key, int scancode, int action, int mods) {
     if (key == GLFW_KEY_C && action == GLFW_PRESS) {
@@ -54,7 +55,8 @@ void InputManager::onKey(int key, int scancode, int action, int mods) {
 
 void InputManager::onFrameBufferResize(int width, int height) {
     glViewport(0, 0, width, height);
-    camera.setFrameBufferSize(width, height);
+    camera.updateAspect(window);
+    hud.updateProjectionMatrix(window);
 }
 
 void InputManager::onCursorMove(double newX, double newY) {

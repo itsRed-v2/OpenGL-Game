@@ -14,6 +14,7 @@
 #include "chunk.hpp"
 #include "world.hpp"
 #include "inputs.hpp"
+#include "hud.hpp"
 
 int main() {
     if (!glfwInit()) {
@@ -64,16 +65,15 @@ int main() {
     FpsCounter fpsCounter(0.5, window);
 
     // Instantiate camera
-    double cursorX, cursorY;
-    glfwGetCursorPos(window, &cursorX, &cursorY);
-    Camera camera (cursorX, cursorY, frameBufferWidth, frameBufferHeight);
+    Camera camera(window);
     camera.position = glm::vec3(0.0, 12.0, 0.0);
 
-    // Instantiate world
+    // Instantiate world and hud
     World world;
+    Hud hud(window);
 
     // Instantiate input manager
-    InputManager input(window, world, camera);
+    InputManager input(window, world, camera, hud);
     glfwSetWindowUserPointer(window, &input);
 
     // Register GLFW callbacks
@@ -201,6 +201,8 @@ int main() {
             
             glBindVertexArray(0);
         }
+
+        hud.draw();
 
         glfwSwapBuffers(window);
         glfwPollEvents();

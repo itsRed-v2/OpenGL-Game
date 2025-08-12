@@ -16,6 +16,7 @@ add_executable(Voxels
             src/chunk.cpp
             src/world.cpp
             src/inputs.cpp
+            src/hud.cpp
             src/math/vectors.cpp
             src/math/raycast.cpp
             )

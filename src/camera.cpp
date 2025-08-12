@@ -9,12 +9,29 @@
 #define NEAR_PLANE 0.1f
 #define FAR_PLANE 1000.0f
 
-Camera::Camera(double initialCursorX, double initialCursorY, int frameBufferWidth, int frameBufferHeight)
-        : cursorX(initialCursorX), cursorY(initialCursorY), frameBufferWidth(frameBufferWidth), frameBufferHeight(frameBufferHeight) {
+Camera::Camera(GLFWwindow* window) {
     position = glm::vec3(0.0, 0.0, 0.0);
     yaw = 0.0f;
     pitch = 0.0f;
     fov = 45.0f;
+    syncCursorPosition(window);
+    updateAspect(window);
+}
+
+void Camera::syncCursorPosition(GLFWwindow* window) {
+    glfwGetCursorPos(window, &cursorX, &cursorY);
+}
+
+void Camera::updateAspect(GLFWwindow* window) {
+    int frameBufferWidth, frameBufferHeight;
+    glfwGetFramebufferSize(window, &frameBufferWidth, &frameBufferHeight);
+    aspect = static_cast<float>(frameBufferWidth) / static_cast<float>(frameBufferHeight);
+
+    updateProjectionMatrix();
+}
+
+void Camera::updateProjectionMatrix() {
+    projection = glm::perspective(glm::radians(fov), aspect, NEAR_PLANE, FAR_PLANE);
 }
 
 void Camera::onCursorMove(double newX, double newY) {
@@ -30,8 +47,6 @@ void Camera::onCursorMove(double newX, double newY) {
     pitch += deltaY * MOUSE_SENSITIVITY;
     if (pitch > 90) pitch = 90;
     if (pitch < -90) pitch = -90;
-
-    // std::cout << yaw << "/" << pitch << std::endl;
 }
 
 void Camera::onScroll(double ossetX, double offsetY) {
@@ -40,6 +55,7 @@ void Camera::onScroll(double ossetX, double offsetY) {
     if (fov > 110.0f) fov = 110.0f;
 
     std::cout << "FOV: " << fov << std::endl;
+    updateProjectionMatrix();
 }
 
 void Camera::processInputs(GLFWwindow* window, float deltaTime) {
@@ -70,16 +86,16 @@ void Camera::processInputs(GLFWwindow* window, float deltaTime) {
 
     if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE) == GLFW_PRESS) {
         fov = 45.0f;
+        updateProjectionMatrix();
     }
 }
 
 glm::mat4 Camera::getProjectionMatrix() const {
-    float aspect = static_cast<float>(frameBufferWidth) / static_cast<float>(frameBufferHeight);
-    return glm::perspective(glm::radians(fov), aspect, NEAR_PLANE, FAR_PLANE);
+    return projection;
 }
 
 glm::mat4 Camera::getViewMatrix() const {
-    glm::mat4 view = glm::mat4(1.0f);
+    glm::mat4 view(1.0f);
     view = glm::rotate(view, glm::radians(pitch), glm::vec3(1.0, 0.0, 0.0));
     view = glm::rotate(view, glm::radians(yaw), glm::vec3(0.0, 1.0, 0.0));
     view = glm::translate(view, -position);
@@ -95,13 +111,4 @@ glm::vec3 Camera::getFrontVector() const {
         - cos(radYaw) * cos(-radPitch)
     );
     return dir;
-}
-
-void Camera::setFrameBufferSize(int width, int height) {
-    frameBufferWidth = width;
-    frameBufferHeight = height;
-}
-
-void Camera::syncCursorPosition(GLFWwindow* window) {
-    glfwGetCursorPos(window, &cursorX, &cursorY);
 }

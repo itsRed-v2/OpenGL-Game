@@ -15,19 +15,23 @@ private:
     float yaw;
     float pitch;
     float fov;
+    float aspect;
+    glm::mat4 projection;
 
     double cursorX, cursorY;
-    int frameBufferWidth, frameBufferHeight;
+
+    void updateProjectionMatrix();
 
 public:
-    Camera(double initialCursorX, double initialCursorY, int frameBufferWidth, int frameBufferHeight);
-    void processInputs(GLFWwindow* window, float deltaTime);
+    Camera(GLFWwindow* window);
+
+    void syncCursorPosition(GLFWwindow* window);
+    void updateAspect(GLFWwindow* window);
 
     void onCursorMove(double newX, double newY);
     void onScroll(double ossetX, double offsetY);
 
-    void setFrameBufferSize(int frameBufferWidth, int frameBufferHeight);
-    void syncCursorPosition(GLFWwindow* window);
+    void processInputs(GLFWwindow* window, float deltaTime);
 
     glm::mat4 getProjectionMatrix() const;
     glm::mat4 getViewMatrix() const;

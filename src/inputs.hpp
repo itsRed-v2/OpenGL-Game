@@ -6,6 +6,7 @@
 
 #include "world.hpp"
 #include "camera.hpp"
+#include "hud.hpp"
 
 namespace EventCallbacks {
     void onKey(GLFWwindow* window, int key, int scancode, int action, int mods);
@@ -20,13 +21,14 @@ private:
     GLFWwindow* window;
     World &world;
     Camera &camera;
+    Hud &hud;
 
     bool cursorFree = false;
     int swapInterval = 1;
 
 public:
     InputManager() = delete;
-    InputManager(GLFWwindow* window, World &world, Camera &camera);
+    InputManager(GLFWwindow* window, World &world, Camera &camera, Hud &hud);
 
     void onKey(int key, int scancode, int action, int mods);
     void onFrameBufferResize(int width, int height);
