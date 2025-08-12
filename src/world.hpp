@@ -5,7 +5,7 @@
 
 #include "chunk.hpp"
 #include "math/vectors.hpp"
-#include "math/intersection.hpp"
+#include "math/raycast.hpp"
 
 class World {
 public:

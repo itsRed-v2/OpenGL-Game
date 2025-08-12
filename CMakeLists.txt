@@ -17,7 +17,7 @@ add_executable(Voxels
             src/world.cpp
             src/inputs.cpp
             src/math/vectors.cpp
-            src/math/intersection.cpp
+            src/math/raycast.cpp
             )
 
 # Add GLAD

@@ -15,75 +15,6 @@
 #include "world.hpp"
 #include "inputs.hpp"
 
-#define ENABLE_VSYNC GLFW_TRUE
-
-Camera* cameraPtr { NULL };
-InputManager* inputManagerPtr { NULL };
-bool cursorFree = false;
-
-void onKey(GLFWwindow* window, int key, int scancode, int action, int mods) {
-    if (key == GLFW_KEY_C && action == GLFW_PRESS) {
-        glfwSetWindowShouldClose(window, GLFW_TRUE);
-    }
-
-    static int swapInterval = ENABLE_VSYNC;
-    if (key == GLFW_KEY_V && action == GLFW_PRESS) {
-        swapInterval = !swapInterval;
-        glfwSwapInterval(swapInterval);
-    }
-
-    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
-        if (cursorFree) {
-            cursorFree = false;
-            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-            cameraPtr->syncCursorPosition(window);
-        } else {
-            cursorFree = true;
-            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-        }
-    }
-}
-
-void onFrameBufferResize(GLFWwindow* window, int width, int height) {
-    glViewport(0, 0, width, height);
-
-    if (cameraPtr == NULL) {
-        std::cerr << "Error: cameraPtr is uninitialized." << std::endl;
-        glfwTerminate();
-        exit(1);
-    }
-    cameraPtr->setFrameBufferSize(width, height);
-}
-
-void onCursorMove(GLFWwindow* window, double newX, double newY) {
-    if (cursorFree) return;
-
-    if (cameraPtr == NULL) {
-        std::cerr << "Error: cameraPtr is uninitialized." << std::endl;
-        glfwTerminate();
-        exit(1);
-    }
-    cameraPtr->onCursorMove(newX, newY);
-}
-
-void onScroll(GLFWwindow* window, double offsetX, double offsetY) {
-    if (cameraPtr == NULL) {
-        std::cerr << "Error: cameraPtr is uninitialized." << std::endl;
-        glfwTerminate();
-        exit(1);
-    }
-    cameraPtr->onScroll(offsetX, offsetY);
-}
-
-void onMouseButton(GLFWwindow* window, int button, int action, int mods) {
-    if (inputManagerPtr == NULL) {
-        std::cerr << "Error: inputManagerPtr is uninitialized." << std::endl;
-        glfwTerminate();
-        exit(1);
-    }
-    inputManagerPtr->onClick(button, action, mods);
-}
-
 int main() {
     if (!glfwInit()) {
         std::cerr << "Error during GLFW initialization." << std::endl;
@@ -127,33 +58,32 @@ int main() {
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    glfwSwapInterval(ENABLE_VSYNC ? 1 : 0);
+    glfwSwapInterval(1);
+
+    // Instantiate FPS counter
+    FpsCounter fpsCounter(0.5, window);
 
     // Instantiate camera
     double cursorX, cursorY;
     glfwGetCursorPos(window, &cursorX, &cursorY);
     Camera camera (cursorX, cursorY, frameBufferWidth, frameBufferHeight);
-    cameraPtr = &camera;
-    
     camera.position = glm::vec3(0.0, 12.0, 0.0);
 
     // Instantiate world
     World world;
 
     // Instantiate input manager
-    InputManager input(world, camera);
-    inputManagerPtr = &input;
+    InputManager input(window, world, camera);
+    glfwSetWindowUserPointer(window, &input);
 
-    // Instantiate FPS counter
-    FpsCounter fpsCounter(0.5, window);
+    // Register GLFW callbacks
+    glfwSetKeyCallback(window, EventCallbacks::onKey);
+    glfwSetFramebufferSizeCallback(window, EventCallbacks::onFrameBufferResize);
+    glfwSetCursorPosCallback(window, EventCallbacks::onCursorMove);
+    glfwSetScrollCallback(window, EventCallbacks::onScroll);
+    glfwSetMouseButtonCallback(window, EventCallbacks::onMouseButton);
 
-    // Register GLFW callbacks and some settings
-    glfwSetKeyCallback(window, onKey);
-    glfwSetFramebufferSizeCallback(window, onFrameBufferResize);
-    glfwSetCursorPosCallback(window, onCursorMove);
-    glfwSetScrollCallback(window, onScroll);
-    glfwSetMouseButtonCallback(window, onMouseButton);
-
+    // Cursor settings
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     if (glfwRawMouseMotionSupported()) {
