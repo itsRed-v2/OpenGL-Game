@@ -29,9 +29,9 @@ public:
     void setFrameBufferSize(int frameBufferWidth, int frameBufferHeight);
     void syncCursorPosition(GLFWwindow* window);
 
-    glm::mat4 getProjectionMatrix();
-    glm::mat4 getViewMatrix();
-    glm::vec3 getFrontVector();
+    glm::mat4 getProjectionMatrix() const;
+    glm::mat4 getViewMatrix() const;
+    glm::vec3 getFrontVector() const;
 };
 
 #endif

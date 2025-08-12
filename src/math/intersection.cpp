@@ -9,23 +9,35 @@ glm::vec3 Ray::getDirection() const {
     return direction;
 }
 
-HitResult rayCubeIntersection(const Ray &ray, Vec3i blockPos) {
-    float tmin = 0, tmax = std::numeric_limits<float>::max();
+std::optional<HitResult> rayCubeIntersection(const Ray &ray, Vec3i blockPos) {
+    glm::vec3 direction = ray.getDirection();
+    glm::vec3 origin = ray.origin;
 
-    for (int i = 0; i < 3; i++) {
-        int32_t boxMin = blockPos[i];
-        int32_t boxMax = blockPos[i] + 1;
-        float t1 = (boxMin - ray.origin[i]) / ray.getDirection()[i];
-        float t2 = (boxMax - ray.origin[i]) / ray.getDirection()[i];
+    float t1x = (blockPos.x - origin.x) / direction.x;
+    float t2x = (blockPos.x + 1 - origin.x) / direction.x;
 
-        tmin = std::max(tmin, std::min(t1, t2));
-        tmax = std::min(tmax, std::max(t1, t2));
+    float t1y = (blockPos.y - origin.y) / direction.y;
+    float t2y = (blockPos.y + 1 - origin.y) / direction.y;
+
+    float t1z = (blockPos.z - origin.z) / direction.z;
+    float t2z = (blockPos.z + 1 - origin.z) / direction.z;
+
+    float tmin = std::max(std::min(t1x, t2x), std::max(std::min(t1y, t2y), std::min(t1z, t2z)));
+    float tmax = std::min(std::max(t1x, t2x), std::min(std::max(t1y, t2y), std::max(t1z, t2z)));
+
+    if (tmin < 0 || tmin > tmax) {
+        return std::nullopt;
     }
 
-    if (tmin < tmax && tmin > 0) {
-        glm::vec3 hitPoint = ray.origin + (ray.getDirection() * tmin);
-        return { true, hitPoint, tmin, blockPos };
-    } else {
-        return { false, glm::vec3(0, 0, 0), -1.0f, blockPos };
-    }
+    BlockFace blockFace;
+    if (tmin == t1x) blockFace = BlockFace::WEST;
+    else if (tmin == t2x) blockFace = BlockFace::EAST;
+    else if (tmin == t1y) blockFace = BlockFace::DOWN;
+    else if (tmin == t2y) blockFace = BlockFace::UP;
+    else if (tmin == t1z) blockFace = BlockFace::NORTH;
+    else if (tmin == t2z) blockFace = BlockFace::SOUTH;
+    else throw runtime_error("Could not determine block face in ray/cube intersection");
+
+    glm::vec3 hitPoint = origin + (direction * tmin);
+    return HitResult{ hitPoint, tmin, blockPos, blockFace };
 }

@@ -7,7 +7,7 @@
 #define CHUNK_SIZE 32
 #define CHUNK_HEIGHT 64
 
-enum Block {
+enum class Block {
     AIR, SOLID
 };
 

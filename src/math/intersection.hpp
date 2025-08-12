@@ -1,9 +1,12 @@
 #ifndef INTERSECTION_HPP
 #define INTERSECTION_HPP
 
+#include <optional>
+
 #include <glm/glm.hpp>
 
 #include "math/vectors.hpp"
+#include "blockface.hpp"
 
 class Ray {
 private:
@@ -17,12 +20,12 @@ public:
 };
 
 struct HitResult {
-    bool success;
     glm::vec3 hitPoint;
     float distance;
-    Vec3i blockHitPos;
+    Vec3i blockPos;
+    BlockFace blockFace;
 };
 
-HitResult rayCubeIntersection(const Ray &ray, Vec3i blockPos);
+std::optional<HitResult> rayCubeIntersection(const Ray &ray, Vec3i blockPos);
 
 #endif

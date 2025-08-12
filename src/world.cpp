@@ -16,13 +16,17 @@ void World::draw(Shader &shader, GLint cubeVAO) {
     }
 }
 
-Block World::getBlock(Vec3i pos) {
+bool World::isInWorld(Vec3i pos) {
     Vec2i chunkCoordinate = blockPosToChunkPos(pos);
-    // if no loaded chunk contains the pos OR if the pos is out of the vertical limits, return AIR by default
-    if (chunks.count(chunkCoordinate) == 0 || pos.y < 0 || pos.y >= CHUNK_HEIGHT) {
+    return chunks.count(chunkCoordinate) == 1 && pos.y >= 0 && pos.y < CHUNK_HEIGHT;
+}
+
+Block World::getBlock(Vec3i pos) {
+    if (!isInWorld(pos)) {
         return Block::AIR;
     }
 
+    Vec2i chunkCoordinate = blockPosToChunkPos(pos);
     Chunk &chunk = chunks.at(chunkCoordinate);
     int32_t x = pos.x % CHUNK_SIZE;
     if (x < 0) x += CHUNK_SIZE;
@@ -32,7 +36,23 @@ Block World::getBlock(Vec3i pos) {
     return chunk.getBlock(x, pos.y, z);
 }
 
-HitResult World::rayCast(const Ray &ray) {
+void World::setBlock(Vec3i pos, Block block) {
+    if (!isInWorld(pos)) {
+        throw invalid_argument("Trying to set block outside of world");
+    }
+
+    Vec2i chunkCoordinate = blockPosToChunkPos(pos);
+    Chunk &chunk = chunks.at(chunkCoordinate);
+    int32_t x = pos.x % CHUNK_SIZE;
+    if (x < 0) x += CHUNK_SIZE;
+    int32_t z = pos.z % CHUNK_SIZE;
+    if (z < 0) z += CHUNK_SIZE;
+
+    chunk.setBlock(x, pos.y, z, block);
+}
+
+
+std::optional<HitResult> World::rayCast(const Ray &ray) {
     glm::vec3 direction = ray.getDirection();
     glm::vec3 origin = ray.origin;
 
@@ -64,5 +84,5 @@ HitResult World::rayCast(const Ray &ray) {
         }
     }
 
-    return { false, glm::vec3(), -1, Vec3i() };
+    return std::nullopt;
 }

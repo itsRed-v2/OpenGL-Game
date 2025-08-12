@@ -12,9 +12,15 @@ public:
     unordered_map<Vec2i, Chunk> chunks;
     
     World();
+
     void draw(Shader &shader, GLint cubeVAO);
+
+    bool isInWorld(Vec3i pos);
+
     Block getBlock(Vec3i pos);
-    HitResult rayCast(const Ray &ray);
+    void setBlock(Vec3i pos, Block block);
+    
+    std::optional<HitResult> rayCast(const Ray &ray);
 };
 
 #endif

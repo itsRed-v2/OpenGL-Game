@@ -23,6 +23,31 @@ bool Vec3i::operator==(const Vec3i &other) const {
     return x == other.x && y == other.y && z == other.z;
 }
 
+Vec3i Vec3i::offset(BlockFace face) {
+    Vec3i copy(*this);
+    switch (face)   {
+        case BlockFace::UP:
+            copy.y++;
+            break;
+        case BlockFace::DOWN:
+            copy.y--;
+            break;
+        case BlockFace::EAST:
+            copy.x++;
+            break;
+        case BlockFace::WEST:
+            copy.x--;
+            break;
+        case BlockFace::SOUTH:
+            copy.z++;
+            break;
+        case BlockFace::NORTH:
+            copy.z--;
+            break;
+    }
+    return copy;
+}
+
 
 
 Vec2i::Vec2i(): x(0), y(0) {}

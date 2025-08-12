@@ -6,6 +6,8 @@
 
 #include <glm/glm.hpp>
 
+#include "blockface.hpp"
+
 using namespace std;
 
 struct Vec3i {
@@ -20,6 +22,8 @@ struct Vec3i {
 
     int32_t & operator[](size_t index);
     bool operator==(const Vec3i &other) const;
+
+    Vec3i offset(BlockFace face);
 };
 
 struct Vec2i {

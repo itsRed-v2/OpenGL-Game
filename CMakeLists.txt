@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.10)
 project(Voxels VERSION 1.0)
 
 # specify the C++ standard
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 # Make an executable named Voxels from source files
@@ -15,6 +15,7 @@ add_executable(Voxels
             src/camera.cpp
             src/chunk.cpp
             src/world.cpp
+            src/inputs.cpp
             src/math/vectors.cpp
             src/math/intersection.cpp
             )

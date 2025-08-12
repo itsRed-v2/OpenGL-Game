@@ -13,10 +13,12 @@
 #include "camera.hpp"
 #include "chunk.hpp"
 #include "world.hpp"
+#include "inputs.hpp"
 
 #define ENABLE_VSYNC GLFW_TRUE
 
 Camera* cameraPtr { NULL };
+InputManager* inputManagerPtr { NULL };
 bool cursorFree = false;
 
 void onKey(GLFWwindow* window, int key, int scancode, int action, int mods) {
@@ -73,6 +75,15 @@ void onScroll(GLFWwindow* window, double offsetX, double offsetY) {
     cameraPtr->onScroll(offsetX, offsetY);
 }
 
+void onMouseButton(GLFWwindow* window, int button, int action, int mods) {
+    if (inputManagerPtr == NULL) {
+        std::cerr << "Error: inputManagerPtr is uninitialized." << std::endl;
+        glfwTerminate();
+        exit(1);
+    }
+    inputManagerPtr->onClick(button, action, mods);
+}
+
 int main() {
     if (!glfwInit()) {
         std::cerr << "Error during GLFW initialization." << std::endl;
@@ -113,6 +124,9 @@ int main() {
 
     glClearColor(0.2, 0.2, 0.2, 1.0);
     glEnable(GL_DEPTH_TEST);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
     glfwSwapInterval(ENABLE_VSYNC ? 1 : 0);
 
     // Instantiate camera
@@ -120,12 +134,26 @@ int main() {
     glfwGetCursorPos(window, &cursorX, &cursorY);
     Camera camera (cursorX, cursorY, frameBufferWidth, frameBufferHeight);
     cameraPtr = &camera;
+    
+    camera.position = glm::vec3(0.0, 12.0, 0.0);
+
+    // Instantiate world
+    World world;
+
+    // Instantiate input manager
+    InputManager input(world, camera);
+    inputManagerPtr = &input;
+
+    // Instantiate FPS counter
+    FpsCounter fpsCounter(0.5, window);
 
     // Register GLFW callbacks and some settings
     glfwSetKeyCallback(window, onKey);
     glfwSetFramebufferSizeCallback(window, onFrameBufferResize);
     glfwSetCursorPosCallback(window, onCursorMove);
     glfwSetScrollCallback(window, onScroll);
+    glfwSetMouseButtonCallback(window, onMouseButton);
+
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     if (glfwRawMouseMotionSupported()) {
@@ -134,9 +162,7 @@ int main() {
         std::cout << "[WARN] Raw mouse motion is not available on this system." << std::endl;
     }
 
-    // Initializing some useful objects
-
-    FpsCounter fpsCounter(0.5, window);
+    // Initializing opengl ressources
 
     Texture2D testTexture("assets/textures/test-16px.png", GL_TEXTURE0);
 
@@ -144,7 +170,9 @@ int main() {
     cubeShader.use();
     cubeShader.setIntUniform("material.texture", 0);
 
-    Shader dotShader ("assets/shaders/dot.vs", "assets/shaders/dot.fs");
+    Shader highlightShader ("assets/shaders/highlight.vs", "assets/shaders/highlight.fs");
+    highlightShader.use();
+    highlightShader.setVec4Uniform("highlightColor", 1.0f, 0.7f, 0.0f, 0.25f);
 
     float vertices[] = {
         // Front face
@@ -206,21 +234,6 @@ int main() {
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
 
-    // Setting up vertex objects for point
-    float pointVertex[] = { 0, 0, 0 };
-
-    GLuint dotVAO, dotVBO;
-    glGenVertexArrays(1, &dotVAO);
-    glBindVertexArray(dotVAO);
-    glGenBuffers(1, &VBO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(pointVertex), pointVertex, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-
-    // Setting scene up
-    camera.position = glm::vec3(0.0, 12.0, 0.0);
-    World world;
-
     glm::mat4 projection, view, model;
 
     while (!glfwWindowShouldClose(window)) {
@@ -241,25 +254,19 @@ int main() {
 
         // Raycasting
         Ray camRay(camera.position, camera.getFrontVector());
-        HitResult hit = world.rayCast(camRay);
-        if (hit.success) {
-            glBindVertexArray(dotVAO);
-            glPointSize(10);
-            model = glm::mat4(1.0f);
-            model = glm::translate(model, hit.hitPoint);
-            dotShader.use();
-            dotShader.setMatrix4fUniform("projection", projection);
-            dotShader.setMatrix4fUniform("view", view); 
-            dotShader.setMatrix4fUniform("model", model); 
-            glDrawArrays(GL_POINTS, 0, 1);
-
+        std::optional<HitResult> hit = world.rayCast(camRay);
+        if (hit) {
             glBindVertexArray(cubeVAO);
+            Vec3i blockHit = hit->blockPos;
             model = glm::mat4(1.0f);
-            Vec3i blockHit = hit.blockHitPos;
             model = glm::translate(model, glm::vec3(blockHit.x, blockHit.y, blockHit.z));
-            model = glm::translate(model, glm::vec3(-0.05));
-            model = glm::scale(model, glm::vec3(1.1));
-            dotShader.setMatrix4fUniform("model", model); 
+            model = glm::translate(model, glm::vec3(0.5));
+            model = glm::scale(model, glm::vec3(1.01));
+            model = glm::translate(model, glm::vec3(-0.5));
+            highlightShader.use();
+            highlightShader.setMatrix4fUniform("projection", projection);
+            highlightShader.setMatrix4fUniform("view", view); 
+            highlightShader.setMatrix4fUniform("model", model); 
             glDrawArrays(GL_TRIANGLES, 0, 36);
             
             glBindVertexArray(0);

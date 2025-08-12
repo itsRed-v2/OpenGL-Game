@@ -73,12 +73,12 @@ void Camera::processInputs(GLFWwindow* window, float deltaTime) {
     }
 }
 
-glm::mat4 Camera::getProjectionMatrix() {
+glm::mat4 Camera::getProjectionMatrix() const {
     float aspect = static_cast<float>(frameBufferWidth) / static_cast<float>(frameBufferHeight);
     return glm::perspective(glm::radians(fov), aspect, NEAR_PLANE, FAR_PLANE);
 }
 
-glm::mat4 Camera::getViewMatrix() {
+glm::mat4 Camera::getViewMatrix() const {
     glm::mat4 view = glm::mat4(1.0f);
     view = glm::rotate(view, glm::radians(pitch), glm::vec3(1.0, 0.0, 0.0));
     view = glm::rotate(view, glm::radians(yaw), glm::vec3(0.0, 1.0, 0.0));
@@ -86,7 +86,7 @@ glm::mat4 Camera::getViewMatrix() {
     return view;
 }
 
-glm::vec3 Camera::getFrontVector() {
+glm::vec3 Camera::getFrontVector() const {
     float radYaw = glm::radians(yaw);
     float radPitch = glm::radians(pitch);
     glm::vec3 dir(

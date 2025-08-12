@@ -101,3 +101,11 @@ void Shader::setVec3Uniform(const char* uniformName, float x, float y, float z) 
 void Shader::setVec3Uniform(const char* uniformName, glm::vec3 vector) {
     glUniform3f(getUniformLocation(uniformName), vector.x, vector.y, vector.z);
 }
+
+void Shader::setVec4Uniform(const char* uniformName, float x, float y, float z, float w) {
+    glUniform4f(getUniformLocation(uniformName), x, y, z, w);
+}
+
+void Shader::setVec4Uniform(const char* uniformName, glm::vec4 vector) {
+    glUniform4f(getUniformLocation(uniformName), vector.x, vector.y, vector.z, vector.w);
+}
