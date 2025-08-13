@@ -56,6 +56,7 @@ int main() {
     glClearColor(0.2, 0.2, 0.2, 1.0);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_BLEND);
+    glEnable(GL_CULL_FACE);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     glfwSwapInterval(1);
@@ -65,7 +66,7 @@ int main() {
 
     // Instantiate camera
     Camera camera(window);
-    camera.position = glm::vec3(0.0, 12.0, 0.0);
+    camera.position = glm::vec3(0.0, 13.0, 0.0);
 
     // Instantiate world and hud
     World world;
@@ -166,6 +167,7 @@ int main() {
     glm::mat4 projection, view, model;
 
     while (!glfwWindowShouldClose(window)) {
+        fpsCounter.frameBegin();
         double deltaTime = fpsCounter.getLastFrameDuration();
         camera.processInputs(window, static_cast<float>(deltaTime));
 
@@ -179,7 +181,7 @@ int main() {
         cubeShader.setMatrix4fUniform("projection", projection);
         cubeShader.setMatrix4fUniform("view", view); 
 
-        world.draw(cubeShader, cubeVAO);
+        world.draw(cubeShader);
 
         // Ray casting
         Ray camRay(camera.position, camera.getFrontVector());
@@ -201,11 +203,13 @@ int main() {
             glBindVertexArray(0);
         }
 
+        glClear(GL_DEPTH_BUFFER_BIT); // We want hud elements to always be drawn on top of world elements
+
         hud.draw();
 
+        fpsCounter.frameDone();
         glfwSwapBuffers(window);
         glfwPollEvents();
-        fpsCounter.tick();
     }
 
     glfwTerminate();

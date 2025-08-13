@@ -12,13 +12,14 @@ class FpsCounter {
     const double sampleDuration;
     double lastSampleStart = glfwGetTime();
     unsigned int currentFrameCount = 0;
-    unsigned int currentFPS = 0;
-    double lastFrameDate = glfwGetTime();
-    double lastFrameDuration = 0.0f;
+    double lastFrameBegin = glfwGetTime();
+    double lastFrameDuration = 0.0;
+    double sampleTotalDrawTime = 0.0;
 
 public:
     FpsCounter(GLFWwindow* window, double sampleDuration);
-    void tick();
+    void frameBegin();
+    void frameDone();
 
     [[nodiscard]] double getLastFrameDuration() const;
 };

@@ -8,18 +8,18 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 # Make an executable named Voxels from source files
 add_executable(Voxels
-            src/main.cpp
-            src/shader.cpp
-            src/fpsCounter.cpp
-            src/texture2D.cpp
-            src/camera.cpp
-            src/chunk.cpp
-            src/world.cpp
-            src/inputs.cpp
-            src/hud.cpp
-            src/math/vectors.cpp
-            src/math/raycast.cpp
-            )
+        src/main.cpp
+        src/shader.cpp
+        src/fpsCounter.cpp
+        src/texture2D.cpp
+        src/camera.cpp
+        src/chunk.cpp
+        src/world.cpp
+        src/inputs.cpp
+        src/hud.cpp
+        src/math/vectors.cpp
+        src/math/raycast.cpp
+)
 
 # Add GLAD
 add_subdirectory(lib/glad)

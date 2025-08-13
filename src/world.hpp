@@ -8,19 +8,19 @@
 #include "math/raycast.hpp"
 
 class World {
-public:
     unordered_map<Vec2i, Chunk> chunks;
-    
+
+public:
     World();
 
-    void draw(Shader &shader, GLuint cubeVAO);
+    void draw(Shader &shader);
 
-    bool isInWorld(Vec3i pos) const;
+    [[nodiscard]] bool isInWorld(Vec3i pos) const;
 
-    Block getBlock(Vec3i pos);
+    [[nodiscard]] Block getBlock(Vec3i pos) const;
     void setBlock(Vec3i pos, Block block);
     
-    std::optional<HitResult> rayCast(const Ray &ray);
+    [[nodiscard]] std::optional<HitResult> rayCast(const Ray &ray) const;
 };
 
 #endif

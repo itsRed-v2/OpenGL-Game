@@ -12,9 +12,9 @@ World::World() {
     }
 }
 
-void World::draw(Shader &shader, const GLuint cubeVAO) {
+void World::draw(Shader &shader) {
     for (auto &[pos, chunk] : chunks) {
-        chunk.draw(shader, cubeVAO);
+        chunk.draw(shader);
     }
 }
 
@@ -23,19 +23,18 @@ bool World::isInWorld(Vec3i pos) const {
     return chunks.count(chunkCoordinate) == 1 && pos.y >= 0 && pos.y < CHUNK_HEIGHT;
 }
 
-Block World::getBlock(Vec3i pos) {
+Block World::getBlock(Vec3i pos) const {
     if (!isInWorld(pos)) {
         return Block::AIR;
     }
 
-    Vec2i chunkCoordinate = blockPosToChunkPos(pos);
-    Chunk &chunk = chunks.at(chunkCoordinate);
-    int32_t x = pos.x % CHUNK_SIZE;
-    if (x < 0) x += CHUNK_SIZE;
-    int32_t z = pos.z % CHUNK_SIZE;
-    if (z < 0) z += CHUNK_SIZE;
+    const Chunk &chunk = chunks.at(blockPosToChunkPos(pos));
+    pos.x %= CHUNK_SIZE;
+    if (pos.x < 0) pos.x += CHUNK_SIZE;
+    pos.z %= CHUNK_SIZE;
+    if (pos.z < 0) pos.z += CHUNK_SIZE;
 
-    return chunk.getBlock(x, pos.y, z);
+    return chunk.getBlock(pos);
 }
 
 void World::setBlock(Vec3i pos, Block block) {
@@ -43,18 +42,17 @@ void World::setBlock(Vec3i pos, Block block) {
         throw std::invalid_argument("Trying to set block outside of world");
     }
 
-    Vec2i chunkCoordinate = blockPosToChunkPos(pos);
-    Chunk &chunk = chunks.at(chunkCoordinate);
-    int32_t x = pos.x % CHUNK_SIZE;
-    if (x < 0) x += CHUNK_SIZE;
-    int32_t z = pos.z % CHUNK_SIZE;
-    if (z < 0) z += CHUNK_SIZE;
+    Chunk &chunk = chunks.at(blockPosToChunkPos(pos));
+    pos.x %= CHUNK_SIZE;
+    if (pos.x < 0) pos.x += CHUNK_SIZE;
+    pos.z %= CHUNK_SIZE;
+    if (pos.z < 0) pos.z += CHUNK_SIZE;
 
-    chunk.setBlock(x, pos.y, z, block);
+    chunk.setBlock(pos, block);
 }
 
 
-std::optional<HitResult> World::rayCast(const Ray &ray) {
+std::optional<HitResult> World::rayCast(const Ray &ray) const {
     glm::vec3 direction = ray.getDirection();
     glm::vec3 origin = ray.origin;
 
