@@ -8,19 +8,19 @@
 using namespace std;
 
 class FpsCounter {
-private:
-    const float sampleDuration;
-    float lastSampleStart;
-    unsigned int currentFrameCount;
-    unsigned int currentFPS;
     GLFWwindow* window;
-    float lastFrameDate;
-    float lastFrameDuration;
+    const double sampleDuration;
+    double lastSampleStart = glfwGetTime();
+    unsigned int currentFrameCount = 0;
+    unsigned int currentFPS = 0;
+    double lastFrameDate = glfwGetTime();
+    double lastFrameDuration = 0.0f;
 
 public:
-    FpsCounter(float sampleDuration, GLFWwindow* window);
+    FpsCounter(GLFWwindow* window, double sampleDuration);
     void tick();
-    float getLastFrameDuration();
+
+    [[nodiscard]] double getLastFrameDuration() const;
 };
 
 #endif

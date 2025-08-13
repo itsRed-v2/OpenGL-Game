@@ -1,30 +1,29 @@
 #include "math/raycast.hpp"
 
-#include <limits>
 #include <algorithm>
 #include <stdexcept>
 
-Ray::Ray(glm::vec3 origin, glm::vec3 direction): origin(origin), direction(glm::normalize(direction)) {}
+Ray::Ray(const glm::vec3 origin, const glm::vec3 direction): origin(origin), direction(glm::normalize(direction)) {}
 
 glm::vec3 Ray::getDirection() const {
     return direction;
 }
 
-std::optional<HitResult> rayCubeIntersection(const Ray &ray, Vec3i blockPos) {
-    glm::vec3 direction = ray.getDirection();
-    glm::vec3 origin = ray.origin;
+std::optional<HitResult> rayCubeIntersection(const Ray &ray, const Vec3i blockPos) {
+    const glm::vec3 direction = ray.getDirection();
+    const glm::vec3 origin = ray.origin;
 
-    float t1x = (blockPos.x - origin.x) / direction.x;
-    float t2x = (blockPos.x + 1 - origin.x) / direction.x;
+    const float t1x = (blockPos.x - origin.x) / direction.x;
+    const float t2x = (blockPos.x + 1 - origin.x) / direction.x;
 
-    float t1y = (blockPos.y - origin.y) / direction.y;
-    float t2y = (blockPos.y + 1 - origin.y) / direction.y;
+    const float t1y = (blockPos.y - origin.y) / direction.y;
+    const float t2y = (blockPos.y + 1 - origin.y) / direction.y;
 
-    float t1z = (blockPos.z - origin.z) / direction.z;
-    float t2z = (blockPos.z + 1 - origin.z) / direction.z;
+    const float t1z = (blockPos.z - origin.z) / direction.z;
+    const float t2z = (blockPos.z + 1 - origin.z) / direction.z;
 
-    float tmin = std::max(std::min(t1x, t2x), std::max(std::min(t1y, t2y), std::min(t1z, t2z)));
-    float tmax = std::min(std::max(t1x, t2x), std::min(std::max(t1y, t2y), std::max(t1z, t2z)));
+    const float tmin = std::max(std::min(t1x, t2x), std::max(std::min(t1y, t2y), std::min(t1z, t2z)));
+    const float tmax = std::min(std::max(t1x, t2x), std::min(std::max(t1y, t2y), std::max(t1z, t2z)));
 
     if (tmin < 0 || tmin > tmax) {
         return std::nullopt;
@@ -39,6 +38,6 @@ std::optional<HitResult> rayCubeIntersection(const Ray &ray, Vec3i blockPos) {
     else if (tmin == t2z) blockFace = BlockFace::SOUTH;
     else throw std::runtime_error("Could not determine block face in ray/cube intersection");
 
-    glm::vec3 hitPoint = origin + (direction * tmin);
+    const glm::vec3 hitPoint = origin + (direction * tmin);
     return HitResult{ hitPoint, tmin, blockPos, blockFace };
 }

@@ -6,12 +6,11 @@
 #include <string>
 
 class Texture2D {
-private:
     GLuint ID;
 
 public:
-    Texture2D(std::string path, GLenum textureUnit);
-    void bind(GLenum textureUnit);
+    Texture2D(const std::string &path, GLenum textureUnit);
+    void bind(GLenum textureUnit) const;
 };
 
 #endif

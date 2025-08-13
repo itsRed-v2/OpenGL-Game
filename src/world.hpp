@@ -13,9 +13,9 @@ public:
     
     World();
 
-    void draw(Shader &shader, GLint cubeVAO);
+    void draw(Shader &shader, GLuint cubeVAO);
 
-    bool isInWorld(Vec3i pos);
+    bool isInWorld(Vec3i pos) const;
 
     Block getBlock(Vec3i pos);
     void setBlock(Vec3i pos, Block block);

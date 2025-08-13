@@ -8,15 +8,14 @@
 #include "texture2D.hpp"
 
 class Hud {
-private:
-    glm::mat4 projection;
-    Shader shader;
-    Texture2D crosshairTexture;
-    GLuint crosshairVAO;
+    Shader shader {"assets/shaders/hud.vert", "assets/shaders/hud.frag"};
+    Texture2D crosshairTexture {"assets/textures/crosshair.png", GL_TEXTURE1};
+    glm::mat4 projection {};
+    GLuint crosshairVAO = 0;
 
 public:
     Hud() = delete;
-    Hud(GLFWwindow* window);
+    explicit Hud(GLFWwindow* window);
     void updateProjectionMatrix(GLFWwindow* window);
 
     void draw();

@@ -17,7 +17,6 @@ namespace EventCallbacks {
 }
 
 class InputManager {
-private:
     GLFWwindow* window;
     World &world;
     Camera &camera;

@@ -2,17 +2,14 @@
 
 #define HUD_SCALE 5
 
-Hud::Hud(GLFWwindow* window):
-        shader("assets/shaders/hud.vs", "assets/shaders/hud.fs"),
-        crosshairTexture("assets/textures/crosshair.png", GL_TEXTURE1)
-{
+Hud::Hud(GLFWwindow* window) {
     updateProjectionMatrix(window);
 
     shader.use();
     shader.setIntUniform("image", 1);
 
     // Setting up VAO for crosshair
-    float crosshairVertices[] = {
+    const float crosshairVertices[] = {
         0, 0, 0, 0, 0,
         1, 0, 0, 1, 0,
         0, 1, 0, 0, 1,
@@ -41,8 +38,8 @@ void Hud::updateProjectionMatrix(GLFWwindow* window) {
     glfwGetWindowContentScale(window, &xScale, &yScale);
 
     projection = glm::scale(glm::mat4(1.0f), glm::vec3(
-        HUD_SCALE * xScale / width,
-        HUD_SCALE * yScale / height,
+        HUD_SCALE * xScale / static_cast<float>(width),
+        HUD_SCALE * yScale / static_cast<float>(height),
         1.0f
     ));
     shader.use();

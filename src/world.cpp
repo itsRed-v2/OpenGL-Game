@@ -12,13 +12,13 @@ World::World() {
     }
 }
 
-void World::draw(Shader &shader, GLint cubeVAO) {
-    for (auto it = chunks.begin(); it != chunks.end(); it++) {
-        it->second.draw(shader, cubeVAO);
+void World::draw(Shader &shader, const GLuint cubeVAO) {
+    for (auto &[pos, chunk] : chunks) {
+        chunk.draw(shader, cubeVAO);
     }
 }
 
-bool World::isInWorld(Vec3i pos) {
+bool World::isInWorld(Vec3i pos) const {
     Vec2i chunkCoordinate = blockPosToChunkPos(pos);
     return chunks.count(chunkCoordinate) == 1 && pos.y >= 0 && pos.y < CHUNK_HEIGHT;
 }

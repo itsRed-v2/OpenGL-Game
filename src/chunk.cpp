@@ -2,7 +2,7 @@
 
 #include <stdexcept>
 
-Chunk::Chunk(Vec2i chunkCoordinate): chunkCoordinate(chunkCoordinate) {
+Chunk::Chunk(const Vec2i chunkCoordinate): chunkCoordinate(chunkCoordinate) {
     // Initialize the content array with air.
     for (int x = 0; x < CHUNK_SIZE; x++) {
         for (int y = 0; y < CHUNK_HEIGHT; y++) {
@@ -24,7 +24,7 @@ Chunk::Chunk(Vec2i chunkCoordinate): chunkCoordinate(chunkCoordinate) {
     setBlock(CHUNK_SIZE - 1, 9, CHUNK_SIZE - 1, Block::SOLID);
 }
 
-Block Chunk::getBlock(int x, int y, int z) {
+Block Chunk::getBlock(int x, int y, int z) const {
     if (x < 0 || x >= CHUNK_SIZE 
             || y < 0 || y >= CHUNK_HEIGHT
             || z < 0 || z >= CHUNK_SIZE)
@@ -42,7 +42,7 @@ void Chunk::setBlock(int x, int y, int z, Block block) {
     content[x][z][y] = block;
 }
 
-void Chunk::draw(Shader &shader, GLint cubeVAO) {
+void Chunk::draw(Shader &shader, GLuint cubeVAO) const {
     glBindVertexArray(cubeVAO);
 
     for (int x = 0; x < CHUNK_SIZE; x++) {
@@ -51,7 +51,7 @@ void Chunk::draw(Shader &shader, GLint cubeVAO) {
                 Block block = getBlock(x, y, z);
 
                 if (block == Block::SOLID) {
-                    glm::mat4 model = glm::mat4(1.0f);
+                    glm::mat4 model(1.0f);
                     glm::vec3 translation(
                         x + chunkCoordinate.x * CHUNK_SIZE,
                         y,
@@ -69,8 +69,8 @@ void Chunk::draw(Shader &shader, GLint cubeVAO) {
     glBindVertexArray(0);
 }
 
-Vec2i blockPosToChunkPos(Vec3i blockPos) {
-    int32_t chunkX = blockPos.x >= 0 ? (blockPos.x / CHUNK_SIZE) : ((blockPos.x + 1) / CHUNK_SIZE) - 1;
-    int32_t chunkZ = blockPos.z >= 0 ? (blockPos.z / CHUNK_SIZE) : ((blockPos.z + 1) / CHUNK_SIZE) - 1;
-    return Vec2i(chunkX, chunkZ);
+Vec2i blockPosToChunkPos(const Vec3i blockPos) {
+    const int32_t chunkX = blockPos.x >= 0 ? (blockPos.x / CHUNK_SIZE) : ((blockPos.x + 1) / CHUNK_SIZE) - 1;
+    const int32_t chunkZ = blockPos.z >= 0 ? (blockPos.z / CHUNK_SIZE) : ((blockPos.z + 1) / CHUNK_SIZE) - 1;
+    return {chunkX, chunkZ};
 }

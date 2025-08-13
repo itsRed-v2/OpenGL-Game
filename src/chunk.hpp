@@ -12,16 +12,15 @@ enum class Block {
 };
 
 class Chunk {
-private:
     Vec2i chunkCoordinate;
     Block content[CHUNK_SIZE][CHUNK_SIZE][CHUNK_HEIGHT];
 
 public:
-    Chunk(Vec2i chunkCoordinate);
-    Block getBlock(int x, int y, int z);
+    explicit Chunk(Vec2i chunkCoordinate);
+    [[nodiscard]] Block getBlock(int x, int y, int z) const;
     void setBlock(int x, int y, int z, Block block);
 
-    void draw(Shader &shader, GLint cubeVAO);
+    void draw(Shader &shader, GLuint cubeVAO) const;
 };
 
 Vec2i blockPosToChunkPos(Vec3i blockPos);

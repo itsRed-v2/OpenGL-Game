@@ -11,7 +11,6 @@
 #include "fpsCounter.hpp"
 #include "texture2D.hpp"
 #include "camera.hpp"
-#include "chunk.hpp"
 #include "world.hpp"
 #include "inputs.hpp"
 #include "hud.hpp"
@@ -32,7 +31,7 @@ int main() {
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
-    GLFWwindow* window = glfwCreateWindow(960, 720, "Voxels !", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(960, 720, "Voxels !", nullptr, nullptr);
     if (!window) {
         std::cerr << "GLFW: window or OpenGL context creation failed" << std::endl;
         glfwTerminate();
@@ -62,7 +61,7 @@ int main() {
     glfwSwapInterval(1);
 
     // Instantiate FPS counter
-    FpsCounter fpsCounter(0.5, window);
+    FpsCounter fpsCounter(window, 0.5);
 
     // Instantiate camera
     Camera camera(window);
@@ -94,13 +93,13 @@ int main() {
 
     // Initializing opengl ressources
 
-    Texture2D testTexture("assets/textures/test-16px.png", GL_TEXTURE0);
+    [[maybe_unused]] Texture2D testTexture("assets/textures/test-16px.png", GL_TEXTURE0);
 
-    Shader cubeShader ("assets/shaders/lighting.vs", "assets/shaders/lighting.fs");
+    Shader cubeShader ("assets/shaders/lighting.vert", "assets/shaders/lighting.frag");
     cubeShader.use();
     cubeShader.setIntUniform("material.texture", 0);
 
-    Shader highlightShader ("assets/shaders/highlight.vs", "assets/shaders/highlight.fs");
+    Shader highlightShader ("assets/shaders/highlight.vert", "assets/shaders/highlight.frag");
     highlightShader.use();
     highlightShader.setVec4Uniform("highlightColor", 1.0f, 0.7f, 0.0f, 0.25f);
 
@@ -167,8 +166,8 @@ int main() {
     glm::mat4 projection, view, model;
 
     while (!glfwWindowShouldClose(window)) {
-        float deltaTime = fpsCounter.getLastFrameDuration();
-        camera.processInputs(window, deltaTime);
+        double deltaTime = fpsCounter.getLastFrameDuration();
+        camera.processInputs(window, static_cast<float>(deltaTime));
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -182,7 +181,7 @@ int main() {
 
         world.draw(cubeShader, cubeVAO);
 
-        // Raycasting
+        // Ray casting
         Ray camRay(camera.position, camera.getFrontVector());
         std::optional<HitResult> hit = world.rayCast(camRay);
         if (hit) {

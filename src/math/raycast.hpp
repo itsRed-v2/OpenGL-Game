@@ -9,14 +9,14 @@
 #include "blockface.hpp"
 
 class Ray {
+public:
+    const glm::vec3 origin;
 private:
     const glm::vec3 direction;
 
 public:
-    const glm::vec3 origin;
-
     Ray(glm::vec3 origin, glm::vec3 direction);
-    glm::vec3 getDirection() const;
+    [[nodiscard]] glm::vec3 getDirection() const;
 };
 
 struct HitResult {

@@ -51,7 +51,7 @@ void Camera::onCursorMove(double newX, double newY) {
     if (pitch < -90) pitch = -90;
 }
 
-void Camera::onScroll(double ossetX, double offsetY) {
+void Camera::onScroll(double offsetX, double offsetY) {
     fov -= offsetY * ZOOM_SENSITIVITY;
     if (fov < 1.0f) fov = 1.0f;
     if (fov > 110.0f) fov = 110.0f;

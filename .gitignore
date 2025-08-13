@@ -3,6 +3,8 @@ build/
 
 # VS code configuration files
 .vscode/
+# jetbrains stuff
+.idea/
 
 # MacOS things
 .DS_Store

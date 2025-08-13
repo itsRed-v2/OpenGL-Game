@@ -12,14 +12,13 @@
 using namespace std;
 
 class Shader {
-private:
     GLuint ID;
 
 public:
-    Shader(string vertexShaderPath, string fragmentShaderPath);
+    Shader(const string &vertexShaderPath, const string &fragmentShaderPath);
 
-    void use();
-    GLint getUniformLocation(const char* uniformName);
+    void use() const;
+    GLint getUniformLocation(const char* uniformName) const;
 
     void setFloatUniform(const char* uniformName, float value);
     void setIntUniform(const char* uniformName, int value);

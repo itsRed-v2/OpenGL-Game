@@ -24,19 +24,19 @@ private:
     void updateProjectionMatrix();
 
 public:
-    Camera(GLFWwindow* window);
+    explicit Camera(GLFWwindow* window);
 
     void skipNextCursorMove();
     void updateAspect(GLFWwindow* window);
 
     void onCursorMove(double newX, double newY);
-    void onScroll(double ossetX, double offsetY);
+    void onScroll(double offsetX, double offsetY);
 
     void processInputs(GLFWwindow* window, float deltaTime);
 
-    glm::mat4 getProjectionMatrix() const;
-    glm::mat4 getViewMatrix() const;
-    glm::vec3 getFrontVector() const;
+    [[nodiscard]] glm::mat4 getProjectionMatrix() const;
+    [[nodiscard]] glm::mat4 getViewMatrix() const;
+    [[nodiscard]] glm::vec3 getFrontVector() const;
 };
 
 #endif
