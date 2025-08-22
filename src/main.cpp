@@ -9,13 +9,16 @@
 
 #include "shader.hpp"
 #include "fpsCounter.hpp"
-#include "texture2D.hpp"
 #include "camera.hpp"
 #include "world.hpp"
 #include "inputs.hpp"
 #include "hud.hpp"
+#include "texturemanip/atlas.hpp"
 
 int main() {
+    // Check block ID configuration
+    ensureCorrectBlockIDs();
+
     if (!glfwInit()) {
         std::cerr << "Error during GLFW initialization." << std::endl;
         return 1;
@@ -94,7 +97,11 @@ int main() {
 
     // Initializing opengl ressources
 
-    [[maybe_unused]] Texture2D testTexture("assets/textures/test-16px.png", GL_TEXTURE0);
+    Atlas atlas("assets/textures/atlas.png", GL_TEXTURE0);
+    atlas.registerTextureUV("test", {0, 0, 16, 16});
+    atlas.registerTextureUV("stone", {0, 16, 16, 16});
+    atlas.registerTextureUV("grass_top", {16, 16, 16, 16});
+    atlas.registerTextureUV("grass_sides", {16, 0, 16, 16});
 
     Shader cubeShader ("assets/shaders/lighting.vert", "assets/shaders/lighting.frag");
     cubeShader.use();
@@ -181,7 +188,7 @@ int main() {
         cubeShader.setMatrix4fUniform("projection", projection);
         cubeShader.setMatrix4fUniform("view", view); 
 
-        world.draw(cubeShader);
+        world.draw(cubeShader, atlas);
 
         // Ray casting
         Ray camRay(camera.position, camera.getFrontVector());

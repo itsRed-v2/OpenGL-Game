@@ -12,9 +12,9 @@ World::World() {
     }
 }
 
-void World::draw(Shader &shader) {
+void World::draw(Shader &shader, const Atlas &atlas) {
     for (auto &[pos, chunk] : chunks) {
-        chunk.draw(shader);
+        chunk.draw(shader, atlas);
     }
 }
 
@@ -23,9 +23,9 @@ bool World::isInWorld(Vec3i pos) const {
     return chunks.count(chunkCoordinate) == 1 && pos.y >= 0 && pos.y < CHUNK_HEIGHT;
 }
 
-Block World::getBlock(Vec3i pos) const {
+block_id World::getBlock(Vec3i pos) const {
     if (!isInWorld(pos)) {
-        return Block::AIR;
+        return Blocks::AIR.id;
     }
 
     const Chunk &chunk = chunks.at(blockPosToChunkPos(pos));
@@ -37,7 +37,11 @@ Block World::getBlock(Vec3i pos) const {
     return chunk.getBlock(pos);
 }
 
-void World::setBlock(Vec3i pos, Block block) {
+void World::setBlock(const Vec3i pos, const Block& block) {
+    setBlock(pos, block.id);
+}
+
+void World::setBlock(Vec3i pos, const block_id id) {
     if (!isInWorld(pos)) {
         throw std::invalid_argument("Trying to set block outside of world");
     }
@@ -48,7 +52,7 @@ void World::setBlock(Vec3i pos, Block block) {
     pos.z %= CHUNK_SIZE;
     if (pos.z < 0) pos.z += CHUNK_SIZE;
 
-    chunk.setBlock(pos, block);
+    chunk.setBlock(pos, id);
 }
 
 
@@ -79,7 +83,7 @@ std::optional<HitResult> World::rayCast(const Ray &ray) const {
         else currentZ += zSign;
 
         Vec3i blockPos(currentX, currentY, currentZ);
-        if (getBlock(blockPos) == Block::SOLID) {
+        if (getBlock(blockPos) != Blocks::AIR) {
             return rayCubeIntersection(ray, blockPos);
         }
     }

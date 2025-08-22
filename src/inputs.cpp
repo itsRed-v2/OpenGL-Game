@@ -79,7 +79,7 @@ void InputManager::onMouseButton(int button, int action, int mods) {
 
         if (hit) {
             if (world.isInWorld(hit->blockPos)) {
-                world.setBlock(hit->blockPos, Block::AIR);
+                world.setBlock(hit->blockPos, Blocks::AIR);
             } else {
                 std::cout << "Cannot break block outside of world !" << std::endl;
             }
@@ -93,7 +93,7 @@ void InputManager::onMouseButton(int button, int action, int mods) {
         if (hit) {
             Vec3i placePos = hit->blockPos.offset(hit->blockFace);
             if (world.isInWorld(placePos)) {
-                world.setBlock(placePos, Block::SOLID);
+                world.setBlock(placePos, Blocks::TEST);
             } else {
                 std::cout << "Cannot place block outside of world !" << std::endl;
             }

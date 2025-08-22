@@ -5,6 +5,8 @@
 #include <chrono>
 #include <iostream>
 
+#include "blocks.hpp"
+
 const unordered_map<BlockFace, array<float, 30>> quads = {
     { BlockFace::SOUTH, {
         0, 0, 1, 0, 0,
@@ -73,7 +75,7 @@ Chunk::Chunk(const Vec2i chunkCoordinate): chunkCoordinate(chunkCoordinate) {
     for (int x = 0; x < CHUNK_SIZE; x++) {
         for (int y = 0; y < CHUNK_HEIGHT; y++) {
             for (int z = 0; z < CHUNK_SIZE; z++) {
-                setBlock({x, y, z}, Block::AIR);
+                setBlock({x, y, z}, Blocks::AIR);
             }
         }
     }
@@ -82,37 +84,42 @@ Chunk::Chunk(const Vec2i chunkCoordinate): chunkCoordinate(chunkCoordinate) {
     for (int x = 0; x < CHUNK_SIZE; x++) {
         for (int y = 0; y <= 10; y++) {
             for (int z = 0; z < CHUNK_SIZE; z++) {
-                setBlock({x, y, z}, Block::SOLID);
+                setBlock({x, y, z}, y == 10 ? Blocks::GRASS : Blocks::STONE);
             }
         }
     }
 
-    setBlock({0, 11, 0}, Block::SOLID);
-    setBlock({CHUNK_SIZE - 1, 11, 0}, Block::SOLID);
-    setBlock({0, 11, CHUNK_SIZE - 1}, Block::SOLID);
-    setBlock({CHUNK_SIZE - 1, 11, CHUNK_SIZE - 1}, Block::SOLID);
+    setBlock({0, 11, 0}, Blocks::TEST);
+    setBlock({CHUNK_SIZE - 1, 11, 0}, Blocks::TEST);
+    setBlock({0, 11, CHUNK_SIZE - 1}, Blocks::TEST);
+    setBlock({CHUNK_SIZE - 1, 11, CHUNK_SIZE - 1}, Blocks::TEST);
 }
 
-Block Chunk::getBlock(const Vec3i& pos) const {
+block_id Chunk::getBlock(const Vec3i& pos) const {
     if (pos.x < 0 || pos.x >= CHUNK_SIZE
             || pos.y < 0 || pos.y >= CHUNK_HEIGHT
             || pos.z < 0 || pos.z >= CHUNK_SIZE)
         throw std::out_of_range("Block position out of range in chunk");
-    
+
     return content[pos.x][pos.z][pos.y];
 }
 
 void Chunk::setBlock(const Vec3i& pos, const Block& block) {
+    setBlock(pos, block.id);
+}
+
+void Chunk::setBlock(const Vec3i& pos, const block_id id) {
     if (pos.x < 0 || pos.x >= CHUNK_SIZE
             || pos.y < 0 || pos.y >= CHUNK_HEIGHT
             || pos.z < 0 || pos.z >= CHUNK_SIZE)
         throw std::out_of_range("Block position out of range in chunk");
 
-    content[pos.x][pos.z][pos.y] = block;
+    content[pos.x][pos.z][pos.y] = id;
     recomputeMeshPending = true;
 }
 
-void Chunk::recomputeMesh() {
+
+void Chunk::recomputeMesh(const Atlas& atlas) {
     using namespace std::chrono;
     auto start = high_resolution_clock::now();
 
@@ -122,8 +129,8 @@ void Chunk::recomputeMesh() {
         for (int32_t y = 0; y < CHUNK_HEIGHT; y++) {
             for (int32_t z = 0; z < CHUNK_SIZE; z++) {
                 Vec3i blockPos(x, y, z);
-                Block block = getBlock(blockPos);
-                if (block == Block::SOLID) {
+                const block_id bid = getBlock(blockPos);
+                if (bid != Blocks::AIR) {
                     for (auto [blockFace, quadVertices] : quads) {
                         Vec3i neighbor = blockPos.offset(blockFace);
                         if (neighbor.x < 0
@@ -132,12 +139,19 @@ void Chunk::recomputeMesh() {
                             || neighbor.y >= CHUNK_HEIGHT
                             || neighbor.z < 0
                             || neighbor.z >= CHUNK_SIZE
-                            || getBlock(neighbor) == Block::AIR)
+                            || getBlock(neighbor) == Blocks::AIR)
                         {
+                            const Block &block = Blocks::fromId(bid);
+                            const string &textureName = blockFace == BlockFace::DOWN || blockFace == BlockFace::UP ? block.topTexture : block.sidesTexture;
                             for (int i = 0; i < 30; i += 5) {
                                 quadVertices[i] += static_cast<float>(x);
                                 quadVertices[i + 1] += static_cast<float>(y);
                                 quadVertices[i + 2] += static_cast<float>(z);
+
+                                glm::vec2 textureCoords(quadVertices[i + 3], quadVertices[i + 4]);
+                                atlas.applyTextureUV(textureCoords, textureName);
+                                quadVertices[i + 3] = textureCoords.x,
+                                quadVertices[i + 4] = textureCoords.y;
                             }
                             mesh.insert(mesh.end(), quadVertices.begin(), quadVertices.end());
                         }
@@ -157,10 +171,10 @@ void Chunk::recomputeMesh() {
     std::cout << "Mesh building took " << ms.count() << "milliseconds" << std::endl;
 }
 
-void Chunk::draw(Shader &shader) {
+void Chunk::draw(Shader &shader, const Atlas& atlas) {
     if (recomputeMeshPending) {
         recomputeMeshPending = false;
-        recomputeMesh();
+        recomputeMesh(atlas);
     }
 
     const glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(

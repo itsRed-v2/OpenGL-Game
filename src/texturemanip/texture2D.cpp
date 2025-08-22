@@ -2,13 +2,12 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb/stb_image.h>
 
-#include "texture2D.hpp"
+#include "texturemanip/texture2D.hpp"
 
 Texture2D::Texture2D(const std::string &path, const GLenum textureUnit) {
     stbi_set_flip_vertically_on_load(true); // Because OpenGL interprets images upside down.
 
-    int width, height, channelCount;
-    unsigned char* data = stbi_load(path.c_str(), &width, &height, &channelCount, 0);
+    unsigned char* data = stbi_load(path.c_str(), &width, &height, &channels, 0);
 
     if (!data) {
         std::cerr << "Failed to load image at " << path << std::endl;
@@ -16,13 +15,13 @@ Texture2D::Texture2D(const std::string &path, const GLenum textureUnit) {
         exit(1);
     }
 
-    if (channelCount != 3 && channelCount != 4) {
-        std::cerr << "Unsupported channel count on image: " << channelCount << std::endl;
+    if (channels != 3 && channels != 4) {
+        std::cerr << "Unsupported channel count on image: " << channels << std::endl;
         glfwTerminate();
         exit(1);
     }
 
-    int imageFormat = channelCount == 3 ? GL_RGB : GL_RGBA;
+    int imageFormat = channels == 3 ? GL_RGB : GL_RGBA;
 
     glGenTextures(1, &ID);
     glActiveTexture(textureUnit);
@@ -38,4 +37,12 @@ Texture2D::Texture2D(const std::string &path, const GLenum textureUnit) {
 void Texture2D::bind(const GLenum textureUnit) const {
     glActiveTexture(textureUnit);
     glBindTexture(GL_TEXTURE_2D, ID);
+}
+
+int Texture2D::getWidth() const {
+    return width;
+}
+
+int Texture2D::getHeight() const {
+    return height;
 }

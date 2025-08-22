@@ -5,7 +5,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "shader.hpp"
-#include "texture2D.hpp"
+#include "texturemanip/texture2D.hpp"
 
 class Hud {
     Shader shader {"assets/shaders/hud.vert", "assets/shaders/hud.frag"};
