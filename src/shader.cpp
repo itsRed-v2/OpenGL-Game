@@ -1,9 +1,12 @@
 #include <string>
 #include <fstream>
 #include <sstream>
-#include <iostream>
+#include <format>
+
+#include <glm/gtc/type_ptr.hpp>
 
 #include "shader.hpp"
+#include "logger.hpp"
 
 using namespace std;
 
@@ -18,9 +21,7 @@ GLuint createShader(const string& path, GLenum type) {
         buffer << sourceFile.rdbuf();
         sourceCode = buffer.str();
     } catch (std::ifstream::failure& e) {
-        std::cerr << "Error: could not read shader file " << path << ": " << e.what() << std::endl;
-        glfwTerminate();
-        exit(1);
+        Logger::crash(std::format("Error: could not read shader file {}: {}", path, e.what()));
     }
 
     const char* cStyleSourceCode = sourceCode.c_str();
@@ -34,9 +35,7 @@ GLuint createShader(const string& path, GLenum type) {
     glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
     if (!success) {
         glGetShaderInfoLog(shader, sizeof(infoLog), nullptr, infoLog);
-        std::cerr << "Error when compiling shader at " << path << ": " << infoLog << std::endl;
-        glfwTerminate();
-        exit(1);
+        Logger::crash(std::format("Error when compiling shader file {}: {}", path, std::string(infoLog)));
     }
 
     return shader;
@@ -56,10 +55,8 @@ Shader::Shader(const string &vertexShaderPath, const string &fragmentShaderPath)
     glGetProgramiv(ID, GL_LINK_STATUS, &success);
     if (!success) {
         glGetProgramInfoLog(ID, sizeof(infoLog), nullptr, infoLog);
-        std::cerr << "Error when linking shader program for " << vertexShaderPath << " and " << fragmentShaderPath
-                << ": " << infoLog << std::endl;
-        glfwTerminate();
-        exit(1);
+        Logger::crash(std::format("Error when linking shader program for {} and {}: {}",
+            vertexShaderPath, fragmentShaderPath, std::string(infoLog)));
     }
 
     // Once linked, we don't need the shaders anymore
@@ -74,9 +71,7 @@ void Shader::use() const {
 GLint Shader::getUniformLocation(const char* uniformName) const {
     const GLint location = glGetUniformLocation(ID, uniformName);
     if (location == -1) {
-        std::cerr << "Could not find uniform location for uniform: " << uniformName << std::endl;
-        glfwTerminate();
-        exit(1);
+        Logger::crash(std::format("Could not find uniform location for uniform: {}", std::string(uniformName)));
     }
 
     return location;

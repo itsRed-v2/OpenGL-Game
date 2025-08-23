@@ -1,5 +1,3 @@
-#include <iostream>
-
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>
 
@@ -7,25 +5,24 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include "shader.hpp"
 #include "fpsCounter.hpp"
 #include "camera.hpp"
 #include "world.hpp"
 #include "inputs.hpp"
 #include "hud.hpp"
 #include "texturemanip/atlas.hpp"
+#include "logger.hpp"
 
 int main() {
     // Check block ID configuration
     ensureCorrectBlockIDs();
 
     if (!glfwInit()) {
-        std::cerr << "Error during GLFW initialization." << std::endl;
-        return 1;
+        Logger::crash("Error during GLFW initialization.");
     }
 
     glfwSetErrorCallback([](int error, const char* description) {
-        std::cerr << "[GLFW Error]: " << description << std::endl;
+        Logger::error("[GLFW Error]: " + std::string(description));
     });
 
     // Creating a window
@@ -36,20 +33,18 @@ int main() {
 
     GLFWwindow* window = glfwCreateWindow(960, 720, "Voxels !", nullptr, nullptr);
     if (!window) {
-        std::cerr << "GLFW: window or OpenGL context creation failed" << std::endl;
-        glfwTerminate();
-        return 1;
+        Logger::crash("GLFW: window or OpenGL context creation failed.");
     }
     glfwMakeContextCurrent(window);
 
     // Loading OpenGL function pointers
     if (!gladLoadGL(glfwGetProcAddress)) {
-        std::cerr << "Failed to initialize GLAD" << std::endl;
-        return 1;
+        Logger::crash("Failed to initialize GLAD");
     }
 
     // Print useful info
-    std::cout << "OpenGL version: " << glGetString(GL_VERSION) << std::endl;
+    auto versionString = reinterpret_cast<const char *>(glGetString(GL_VERSION));
+    Logger::info("OpenGL version: " + std::string(versionString));
 
     // Setting up OpenGL viewport and other settings
     int frameBufferWidth, frameBufferHeight;
@@ -92,7 +87,7 @@ int main() {
     if (glfwRawMouseMotionSupported()) {
         glfwSetInputMode(window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
     } else {
-        std::cout << "[WARN] Raw mouse motion is not available on this system." << std::endl;
+        Logger::warn("Raw mouse motion is not available on this system.");
     }
 
     Atlas atlas("assets/textures/atlas.png", GL_TEXTURE0);

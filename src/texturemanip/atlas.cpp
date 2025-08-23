@@ -2,6 +2,8 @@
 
 #include <stdexcept>
 
+#include "logger.hpp"
+
 TextureUV::TextureUV(const int32_t x, const int32_t y, const int32_t w, const int32_t h) : start(x, y), size(w, h) {}
 
 Atlas::Atlas(const std::string &path, const GLenum textureUnit): texture(path, textureUnit) {}
@@ -25,6 +27,6 @@ void Atlas::applyTextureUV(glm::vec2& textureCoordinate, const std::string& text
         textureCoordinate.y = 1 - y;
 
     } catch ([[maybe_unused]] const std::out_of_range& o) {
-        throw std::invalid_argument("No such texture in atlas: " + textureName);
+        Logger::crash("No such texture in atlas: " + textureName);
     }
 }

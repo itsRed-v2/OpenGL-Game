@@ -1,11 +1,13 @@
 #include "chunk.hpp"
 
-#include <stdexcept>
 #include <unordered_map>
-#include <chrono>
-#include <iostream>
+#include <format>
+
+#define GLFW_INCLUDE_NONE
+#include <GLFW/glfw3.h>
 
 #include "blocks.hpp"
+#include "logger.hpp"
 
 const unordered_map<BlockFace, array<float, 30>> quads = {
     { BlockFace::SOUTH, {
@@ -100,7 +102,7 @@ block_id Chunk::getBlock(const Vec3i& pos) const {
     if (pos.x < 0 || pos.x >= CHUNK_SIZE
             || pos.y < 0 || pos.y >= CHUNK_HEIGHT
             || pos.z < 0 || pos.z >= CHUNK_SIZE)
-        throw std::out_of_range("Block position out of range in chunk");
+        Logger::crash("Block position out of range in chunk");
 
     return content[pos.x][pos.z][pos.y];
 }
@@ -113,7 +115,7 @@ void Chunk::setBlock(const Vec3i& pos, const block_id id) {
     if (pos.x < 0 || pos.x >= CHUNK_SIZE
             || pos.y < 0 || pos.y >= CHUNK_HEIGHT
             || pos.z < 0 || pos.z >= CHUNK_SIZE)
-        throw std::out_of_range("Block position out of range in chunk");
+        Logger::crash("Block position out of range in chunk");
 
     content[pos.x][pos.z][pos.y] = id;
     recomputeMeshPending = true;
@@ -121,8 +123,7 @@ void Chunk::setBlock(const Vec3i& pos, const block_id id) {
 
 
 void Chunk::recomputeMesh(const Atlas& atlas) {
-    using namespace std::chrono;
-    auto start = high_resolution_clock::now();
+    const double start = glfwGetTime();
 
     mesh.clear();
 
@@ -167,9 +168,8 @@ void Chunk::recomputeMesh(const Atlas& atlas) {
     glBufferData(GL_ARRAY_BUFFER, mesh.size() * sizeof(float), mesh.data(), GL_STATIC_DRAW);
     glBindVertexArray(0);
 
-    auto end = high_resolution_clock::now();
-    duration<double, std::milli> ms = end - start;
-    std::cout << "Mesh building took " << ms.count() << "milliseconds" << std::endl;
+    const double end = glfwGetTime();
+    Logger::info(std::format("Mesh building took {:.3f} milliseconds", (end - start) * 1000));
 }
 
 void Chunk::draw(Shader &shader, const Atlas& atlas) {

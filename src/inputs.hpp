@@ -1,7 +1,7 @@
 #ifndef INPUTS_HPP
 #define INPUTS_HPP
 
-#include <glad/gl.h>
+#define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 
 #include "world.hpp"

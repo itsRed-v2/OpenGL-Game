@@ -1,6 +1,8 @@
-#include <iostream>
+#include <format>
 
 #include "camera.hpp"
+
+#include "logger.hpp"
 
 #define MOVEMENT_SPEED 10.0f
 #define MOUSE_SENSITIVITY 0.1f
@@ -56,7 +58,7 @@ void Camera::onScroll(double offsetX, double offsetY) {
     if (fov < 1.0f) fov = 1.0f;
     if (fov > 110.0f) fov = 110.0f;
 
-    std::cout << "FOV: " << fov << std::endl;
+    Logger::info(std::format("FOV: {:.2f}", fov));
     updateProjectionMatrix();
 }
 

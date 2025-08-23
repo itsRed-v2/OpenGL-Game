@@ -1,6 +1,6 @@
 #include "world.hpp"
 
-#include <stdexcept>
+#include "logger.hpp"
 
 World::World() {
     // Setting up shaders
@@ -138,7 +138,7 @@ void World::setBlock(const Vec3i pos, const Block& block) {
 
 void World::setBlock(Vec3i pos, const block_id id) {
     if (!isInWorld(pos)) {
-        throw std::invalid_argument("Trying to set block outside of world");
+        Logger::crash("Trying to set block outside of world");
     }
 
     Chunk &chunk = chunks.at(blockPosToChunkPos(pos));

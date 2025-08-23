@@ -1,8 +1,9 @@
-#include <iostream>
+#include <format>
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb/stb_image.h>
 
 #include "texturemanip/texture2D.hpp"
+#include "logger.hpp"
 
 Texture2D::Texture2D(const std::string &path, const GLenum textureUnit) {
     stbi_set_flip_vertically_on_load(true); // Because OpenGL interprets images upside down.
@@ -10,15 +11,12 @@ Texture2D::Texture2D(const std::string &path, const GLenum textureUnit) {
     unsigned char* data = stbi_load(path.c_str(), &width, &height, &channels, 0);
 
     if (!data) {
-        std::cerr << "Failed to load image at " << path << std::endl;
-        glfwTerminate();
-        exit(1);
+        Logger::crash("Failed to load image at " + path);
     }
 
     if (channels != 3 && channels != 4) {
-        std::cerr << "Unsupported channel count on image: " << channels << std::endl;
-        glfwTerminate();
-        exit(1);
+        Logger::crash(std::format("Unsupported channel count on image {}: {} channels found",
+            path, channels));
     }
 
     int imageFormat = channels == 3 ? GL_RGB : GL_RGBA;

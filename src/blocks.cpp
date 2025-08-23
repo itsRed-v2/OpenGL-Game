@@ -1,10 +1,13 @@
 #include "blocks.hpp"
 
 #include <array>
-#include <stdexcept>
+#include <format>
+
+#include "logger.hpp"
 
 #define BLOCK_COUNT 4
 
+// ReSharper disable once CppTemplateArgumentsCanBeDeduced
 constexpr std::array<const Block*, BLOCK_COUNT> BLOCKS = {
     &Blocks::AIR,
     &Blocks::TEST,
@@ -14,15 +17,16 @@ constexpr std::array<const Block*, BLOCK_COUNT> BLOCKS = {
 
 const Block &Blocks::fromId(const block_id id) {
     if (id < 0 || id >= BLOCK_COUNT)
-        throw std::invalid_argument("invalid block id: " + std::to_string(id));
+        Logger::crash("Invalid block id: " + std::to_string(id));
     return *BLOCKS[id];
 }
 
 void ensureCorrectBlockIDs() {
     for (int i = 0; i < BLOCK_COUNT; i++) {
         if (BLOCKS[i]->id != i) {
-            throw std::runtime_error("Block position in the BLOCKS array does not match its ID (block ID: "
-                + std::to_string(BLOCKS[i]->id) + ", array index: " + std::to_string(i) + ")");
+            Logger::crash(std::format(
+                "Block position in the BLOCKS array does not match its ID (block ID: {}, array index: {})",
+                BLOCKS[i]->id, i));
         }
     }
 }

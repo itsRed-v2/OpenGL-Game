@@ -1,8 +1,7 @@
 #include "inputs.hpp"
 
-#include <iostream>
-
 #include "math/raycast.hpp"
+#include "logger.hpp"
 
 // Static event callback functions to forward event calls to the InputManager object
 
@@ -81,7 +80,7 @@ void InputManager::onMouseButton(int button, int action, int mods) {
             if (world.isInWorld(hit->blockPos)) {
                 world.setBlock(hit->blockPos, Blocks::AIR);
             } else {
-                std::cout << "Cannot break block outside of world !" << std::endl;
+                Logger::info("Cannot break block outside of world !");
             }
         }
     }
@@ -95,7 +94,7 @@ void InputManager::onMouseButton(int button, int action, int mods) {
             if (world.isInWorld(placePos)) {
                 world.setBlock(placePos, Blocks::TEST);
             } else {
-                std::cout << "Cannot place block outside of world !" << std::endl;
+                Logger::info("Cannot place block outside of world !");
             }
         }
     }

@@ -1,6 +1,6 @@
 #include "math/raycast.hpp"
 
-#include <stdexcept>
+#include "logger.hpp"
 
 #define max(a,b) ((a) > (b) ? (a) : (b))
 #define min(a,b) ((a) < (b) ? (a) : (b))
@@ -38,7 +38,7 @@ std::optional<HitResult> rayCubeIntersection(const Ray &ray, const Vec3i blockPo
     else if (tmin == t2y) blockFace = BlockFace::UP;
     else if (tmin == t1z) blockFace = BlockFace::NORTH;
     else if (tmin == t2z) blockFace = BlockFace::SOUTH;
-    else throw std::runtime_error("Could not determine block face in ray/cube intersection.");
+    else Logger::crash("Could not determine block face in ray/cube intersection.");
 
     const glm::vec3 hitPoint = origin + (direction * tmin);
     return HitResult{ hitPoint, tmin, blockPos, blockFace };
