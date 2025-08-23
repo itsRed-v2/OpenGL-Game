@@ -7,7 +7,7 @@
 
 #include "fpsCounter.hpp"
 #include "camera.hpp"
-#include "world.hpp"
+#include "world/world.hpp"
 #include "inputs.hpp"
 #include "hud.hpp"
 #include "texturemanip/atlas.hpp"

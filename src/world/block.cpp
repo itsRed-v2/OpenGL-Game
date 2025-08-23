@@ -1,4 +1,4 @@
-#include "block.hpp"
+#include "world/block.hpp"
 
 Block::Block(const block_id id, const string &topTexture, const string &sidesTexture): id(id), topTexture(topTexture), sidesTexture(sidesTexture) {}
 

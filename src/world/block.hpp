@@ -1,8 +1,6 @@
 #ifndef VOXELS_BLOCK_HPP
 #define VOXELS_BLOCK_HPP
 
-#include "texturemanip/texture2D.hpp"
-
 #include <string>
 
 using namespace std;

@@ -1,7 +1,7 @@
 #ifndef VOXELS_BLOCKS_HPP
 #define VOXELS_BLOCKS_HPP
 
-#include "block.hpp"
+#include "world/block.hpp"
 
 namespace Blocks {
     const Block& fromId(block_id id);

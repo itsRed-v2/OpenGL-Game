@@ -3,10 +3,10 @@
 
 #include <unordered_map>
 
-#include "chunk.hpp"
+#include "world/chunk.hpp"
 #include "math/vectors.hpp"
 #include "math/raycast.hpp"
-#include "blocks.hpp"
+#include "world/blocks.hpp"
 #include "camera.hpp"
 
 class World {

@@ -11,18 +11,18 @@ add_executable(Voxels
         src/main.cpp
         src/shader.cpp
         src/fpsCounter.cpp
-        src/texturemanip/texture2D.cpp
+        src/logger.cpp
         src/camera.cpp
-        src/chunk.cpp
-        src/world.cpp
         src/inputs.cpp
         src/hud.cpp
-        src/block.cpp
-        src/blocks.cpp
+        src/texturemanip/texture2D.cpp
+        src/texturemanip/atlas.cpp
+        src/world/chunk.cpp
+        src/world/world.cpp
+        src/world/block.cpp
+        src/world/blocks.cpp
         src/math/vectors.cpp
         src/math/raycast.cpp
-        src/texturemanip/atlas.cpp
-        src/logger.cpp
 )
 
 # Add GLAD

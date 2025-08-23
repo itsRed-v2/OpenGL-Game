@@ -5,7 +5,7 @@
 
 #include "shader.hpp"
 #include "math/vectors.hpp"
-#include "block.hpp"
+#include "world/block.hpp"
 #include "texturemanip/atlas.hpp"
 
 #define CHUNK_SIZE 32

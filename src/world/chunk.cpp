@@ -1,4 +1,4 @@
-#include "chunk.hpp"
+#include "world/chunk.hpp"
 
 #include <unordered_map>
 #include <format>
@@ -6,7 +6,7 @@
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 
-#include "blocks.hpp"
+#include "world/blocks.hpp"
 #include "logger.hpp"
 
 const unordered_map<BlockFace, array<float, 30>> quads = {

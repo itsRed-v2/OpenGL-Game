@@ -1,4 +1,4 @@
-#include "blocks.hpp"
+#include "world/blocks.hpp"
 
 #include <array>
 #include <format>

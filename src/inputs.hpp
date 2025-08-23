@@ -4,7 +4,7 @@
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 
-#include "world.hpp"
+#include "world/world.hpp"
 #include "camera.hpp"
 #include "hud.hpp"
 
