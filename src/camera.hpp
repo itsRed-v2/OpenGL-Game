@@ -15,10 +15,10 @@ private:
     float yaw = 0.0f;
     float pitch = 0.0f;
     float fov = 45.0f;
-    float aspect;
-    glm::mat4 projection;
+    float aspect = 1;
+    glm::mat4 projection {};
 
-    double cursorX, cursorY;
+    double cursorX = 0, cursorY = 0;
     bool shouldSkipNextCursorMove = true;
 
     void updateProjectionMatrix();

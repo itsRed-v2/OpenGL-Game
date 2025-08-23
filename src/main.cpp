@@ -95,83 +95,11 @@ int main() {
         std::cout << "[WARN] Raw mouse motion is not available on this system." << std::endl;
     }
 
-    // Initializing opengl ressources
-
     Atlas atlas("assets/textures/atlas.png", GL_TEXTURE0);
     atlas.registerTextureUV("test", {0, 0, 16, 16});
     atlas.registerTextureUV("stone", {0, 16, 16, 16});
     atlas.registerTextureUV("grass_top", {16, 16, 16, 16});
     atlas.registerTextureUV("grass_sides", {16, 0, 16, 16});
-
-    Shader cubeShader ("assets/shaders/lighting.vert", "assets/shaders/lighting.frag");
-    cubeShader.use();
-    cubeShader.setIntUniform("material.texture", 0);
-
-    Shader highlightShader ("assets/shaders/highlight.vert", "assets/shaders/highlight.frag");
-    highlightShader.use();
-    highlightShader.setVec4Uniform("highlightColor", 1.0f, 0.7f, 0.0f, 0.25f);
-
-    float vertices[] = {
-        // Front face
-        0, 0, 1, 0, 0,
-        1, 0, 1, 1, 0,
-        0, 1, 1, 0, 1,
-        0, 1, 1, 0, 1,
-        1, 0, 1, 1, 0,
-        1, 1, 1, 1, 1,
-        // Back face
-        1, 0, 0, 0, 0,
-        0, 0, 0, 1, 0,
-        1, 1, 0, 0, 1,
-        1, 1, 0, 0, 1,
-        0, 0, 0, 1, 0,
-        0, 1, 0, 1, 1,
-        // Right face,
-        1, 0, 1, 0, 0,
-        1, 0, 0, 1, 0,
-        1, 1, 1, 0, 1,
-        1, 1, 1, 0, 1,
-        1, 0, 0, 1, 0,
-        1, 1, 0, 1, 1,
-        // Left face
-        0, 0, 0, 0, 0,
-        0, 0, 1, 1, 0,
-        0, 1, 0, 0, 1,
-        0, 1, 0, 0, 1,
-        0, 0, 1, 1, 0,
-        0, 1, 1, 1, 1,
-        // Top face
-        0, 1, 1, 0, 0,
-        1, 1, 1, 1, 0,
-        0, 1, 0, 0, 1,
-        0, 1, 0, 0, 1,
-        1, 1, 1, 1, 0,
-        1, 1, 0, 1, 1,
-        // Bottom face,
-        0, 0, 0, 0, 0,
-        1, 0, 0, 1, 0,
-        0, 0, 1, 0, 1,
-        0, 0, 1, 0, 1,
-        1, 0, 0, 1, 0,
-        1, 0, 1, 1, 1,
-    };
-
-    // Setting up VAO for cube
-    GLuint cubeVAO;
-    glGenVertexArrays(1, &cubeVAO);
-    glBindVertexArray(cubeVAO);
-
-    GLuint VBO;
-    glGenBuffers(1, &VBO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
-
-    glm::mat4 projection, view, model;
 
     while (!glfwWindowShouldClose(window)) {
         fpsCounter.frameBegin();
@@ -180,35 +108,7 @@ int main() {
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        projection = camera.getProjectionMatrix();
-        view = camera.getViewMatrix();
-
-        // Rendering the world
-        cubeShader.use();
-        cubeShader.setMatrix4fUniform("projection", projection);
-        cubeShader.setMatrix4fUniform("view", view); 
-
-        world.draw(cubeShader, atlas);
-
-        // Ray casting
-        Ray camRay(camera.position, camera.getFrontVector());
-        std::optional<HitResult> hit = world.rayCast(camRay);
-        if (hit) {
-            glBindVertexArray(cubeVAO);
-            Vec3i blockHit = hit->blockPos;
-            model = glm::mat4(1.0f);
-            model = glm::translate(model, glm::vec3(blockHit.x, blockHit.y, blockHit.z));
-            model = glm::translate(model, glm::vec3(0.5));
-            model = glm::scale(model, glm::vec3(1.01));
-            model = glm::translate(model, glm::vec3(-0.5));
-            highlightShader.use();
-            highlightShader.setMatrix4fUniform("projection", projection);
-            highlightShader.setMatrix4fUniform("view", view); 
-            highlightShader.setMatrix4fUniform("model", model); 
-            glDrawArrays(GL_TRIANGLES, 0, 36);
-            
-            glBindVertexArray(0);
-        }
+        world.draw(camera, atlas);
 
         glClear(GL_DEPTH_BUFFER_BIT); // We want hud elements to always be drawn on top of world elements
 

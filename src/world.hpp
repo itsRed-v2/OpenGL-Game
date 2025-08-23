@@ -7,14 +7,24 @@
 #include "math/vectors.hpp"
 #include "math/raycast.hpp"
 #include "blocks.hpp"
+#include "camera.hpp"
 
 class World {
     unordered_map<Vec2i, Chunk> chunks;
+    Shader chunkShader {
+        "assets/shaders/chunk.vert",
+        "assets/shaders/chunk.frag"
+    };
+    Shader highlightShader {
+        "assets/shaders/highlight.vert",
+        "assets/shaders/highlight.frag"
+    };
+    GLuint cubeVAO = 0;
 
 public:
     World();
 
-    void draw(Shader &shader, const Atlas &atlas);
+    void draw(const Camera &camera, const Atlas &atlas);
 
     [[nodiscard]] bool isInWorld(Vec3i pos) const;
 
