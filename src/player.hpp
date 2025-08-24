@@ -1,0 +1,30 @@
+#ifndef VOXELS_PLAYER_HPP
+#define VOXELS_PLAYER_HPP
+
+#include "camera.hpp"
+#include "math/aabb.hpp"
+#include "world/world.hpp"
+
+class Player {
+    glm::vec3 position;
+    glm::vec3 velocity = glm::vec3(0.0, 0.0, 0.0);
+    float yaw = 0;
+    float pitch = 0;
+
+    Camera &camera;
+    double cursorX = 0, cursorY = 0;
+    bool shouldSkipNextCursorMove = true;
+
+    [[nodiscard]] AABB boundingBox() const;
+
+    void moveWithCollisions(const World &world, float deltaTime);
+    [[nodiscard]] vector<AABB> gatherSurroundingCollisionBoxes(const World &world, glm::vec3 movement) const;
+public:
+    Player(Camera &camera, glm::vec3 position);
+
+    void skipNextCursorMove();
+    void onCursorMove(double newX, double newY);
+    void processMovement(GLFWwindow* window, const World &world, float deltaTime);
+};
+
+#endif //VOXELS_PLAYER_HPP

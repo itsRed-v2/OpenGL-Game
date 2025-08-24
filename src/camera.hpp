@@ -10,29 +10,23 @@
 class Camera {
 public:
     glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f);
-
-private:
     float yaw = 0.0f;
     float pitch = 0.0f;
+
+private:
     float fov = 45.0f;
     float aspect = 1;
     glm::mat4 projection {};
-
-    double cursorX = 0, cursorY = 0;
-    bool shouldSkipNextCursorMove = true;
 
     void updateProjectionMatrix();
 
 public:
     explicit Camera(GLFWwindow* window);
 
-    void skipNextCursorMove();
     void updateAspect(GLFWwindow* window);
 
-    void onCursorMove(double newX, double newY);
     void onScroll(double offsetX, double offsetY);
-
-    void processInputs(GLFWwindow* window, float deltaTime);
+    void onMouseButton(int button, int action, int mods);
 
     [[nodiscard]] glm::mat4 getProjectionMatrix() const;
     [[nodiscard]] glm::mat4 getViewMatrix() const;

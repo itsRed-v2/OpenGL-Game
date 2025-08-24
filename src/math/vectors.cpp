@@ -4,6 +4,11 @@
 
 Vec3i::Vec3i(const int32_t x, const int32_t y, const int32_t z): x(x), y(y), z(z) {}
 
+Vec3i::Vec3i(const glm::vec3 pos):
+    x(static_cast<int32_t>(std::floor(pos.x))),
+    y(static_cast<int32_t>(std::floor(pos.y))),
+    z(static_cast<int32_t>(std::floor(pos.z))) {}
+
 bool Vec3i::operator==(const Vec3i &other) const {
     return x == other.x && y == other.y && z == other.z;
 }

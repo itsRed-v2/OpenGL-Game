@@ -7,6 +7,7 @@
 #include "world/world.hpp"
 #include "camera.hpp"
 #include "hud.hpp"
+#include "player.hpp"
 
 namespace EventCallbacks {
     void onKey(GLFWwindow* window, int key, int scancode, int action, int mods);
@@ -20,6 +21,7 @@ class InputManager {
     GLFWwindow* window;
     World &world;
     Camera &camera;
+    Player &player;
     Hud &hud;
 
     bool cursorFree = false;
@@ -27,7 +29,7 @@ class InputManager {
 
 public:
     InputManager() = delete;
-    InputManager(GLFWwindow* window, World &world, Camera &camera, Hud &hud);
+    InputManager(GLFWwindow* window, World &world, Camera &camera, Player &player, Hud &hud);
 
     void onKey(int key, int scancode, int action, int mods);
     void onFrameBufferResize(int width, int height);

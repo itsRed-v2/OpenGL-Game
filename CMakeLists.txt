@@ -15,6 +15,7 @@ add_executable(Voxels
         src/camera.cpp
         src/inputs.cpp
         src/hud.cpp
+        src/player.cpp
         src/texturemanip/texture2D.cpp
         src/texturemanip/atlas.cpp
         src/world/chunk.cpp
@@ -23,6 +24,8 @@ add_executable(Voxels
         src/world/blocks.cpp
         src/math/vectors.cpp
         src/math/raycast.cpp
+        src/math/aabb.cpp
+        src/math/direction.cpp
 )
 
 # Add GLAD

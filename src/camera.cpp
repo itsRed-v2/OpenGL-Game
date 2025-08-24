@@ -15,10 +15,6 @@ Camera::Camera(GLFWwindow* window) {
     updateAspect(window);
 }
 
-void Camera::skipNextCursorMove() {
-    shouldSkipNextCursorMove = true;
-}
-
 void Camera::updateAspect(GLFWwindow* window) {
     int frameBufferWidth, frameBufferHeight;
     glfwGetFramebufferSize(window, &frameBufferWidth, &frameBufferHeight);
@@ -31,29 +27,7 @@ void Camera::updateProjectionMatrix() {
     projection = glm::perspective(glm::radians(fov), aspect, NEAR_PLANE, FAR_PLANE);
 }
 
-void Camera::onCursorMove(double newX, double newY) {
-    if (shouldSkipNextCursorMove) {
-        shouldSkipNextCursorMove = false;
-        cursorX = newX;
-        cursorY = newY;
-        return;
-    }
-
-    double deltaX = newX - cursorX;
-    double deltaY = newY - cursorY;
-    cursorX = newX;
-    cursorY = newY;
-    
-    yaw += deltaX * MOUSE_SENSITIVITY;
-    if (yaw < -180) yaw += 360;
-    if (yaw > 180) yaw -= 360;
-
-    pitch += deltaY * MOUSE_SENSITIVITY;
-    if (pitch > 90) pitch = 90;
-    if (pitch < -90) pitch = -90;
-}
-
-void Camera::onScroll(double offsetX, double offsetY) {
+void Camera::onScroll([[maybe_unused]] const double offsetX, const double offsetY) {
     fov -= offsetY * ZOOM_SENSITIVITY;
     if (fov < 1.0f) fov = 1.0f;
     if (fov > 110.0f) fov = 110.0f;
@@ -62,33 +36,8 @@ void Camera::onScroll(double offsetX, double offsetY) {
     updateProjectionMatrix();
 }
 
-void Camera::processInputs(GLFWwindow* window, float deltaTime) {
-    glm::vec3 relativeMovement(0.0, 0.0, 0.0);
-
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        relativeMovement.z -= MOVEMENT_SPEED * deltaTime;
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        relativeMovement.z += MOVEMENT_SPEED * deltaTime;
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        relativeMovement.x -= MOVEMENT_SPEED * deltaTime;
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        relativeMovement.x += MOVEMENT_SPEED * deltaTime;
-    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
-        relativeMovement.y += MOVEMENT_SPEED * deltaTime;
-    if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
-        relativeMovement.y -= MOVEMENT_SPEED * deltaTime;
-
-    // rotate the camera-relative movement by yaw degrees around Y-axis to get world-relative movement
-    float radYaw = glm::radians(yaw);
-    glm::vec3 movement(
-        relativeMovement.x * cos(radYaw) - relativeMovement.z * sin(radYaw),
-        relativeMovement.y,
-        relativeMovement.x * sin(radYaw) + relativeMovement.z * cos(radYaw)
-    );
-
-    position += movement;
-
-    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE) == GLFW_PRESS) {
+void Camera::onMouseButton(const int button, const int action, [[maybe_unused]] const int mods) {
+    if (button == GLFW_MOUSE_BUTTON_MIDDLE && action == GLFW_PRESS) {
         fov = 45.0f;
         updateProjectionMatrix();
     }

@@ -27,8 +27,8 @@ void EventCallbacks::onMouseButton(GLFWwindow* window, int button, int action, i
 
 // InputManager implementation
 
-InputManager::InputManager(GLFWwindow* window, World &world, Camera &camera, Hud &hud): 
-        window(window), world(world), camera(camera), hud(hud) {}
+InputManager::InputManager(GLFWwindow* window, World &world, Camera &camera, Player &player, Hud &hud):
+        window(window), world(world), camera(camera), player(player), hud(hud) {}
 
 void InputManager::onKey(int key, int scancode, int action, int mods) {
     if (key == GLFW_KEY_C && action == GLFW_PRESS) {
@@ -44,7 +44,7 @@ void InputManager::onKey(int key, int scancode, int action, int mods) {
         if (cursorFree) {
             cursorFree = false;
             glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-            camera.skipNextCursorMove();
+            player.skipNextCursorMove();
         } else {
             cursorFree = true;
             glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
@@ -61,7 +61,7 @@ void InputManager::onFrameBufferResize(int width, int height) {
 void InputManager::onCursorMove(double newX, double newY) {
     if (cursorFree) return;
 
-    camera.onCursorMove(newX, newY);
+    player.onCursorMove(newX, newY);
 }
 
 void InputManager::onScroll(double offsetX, double offsetY) {
@@ -69,6 +69,8 @@ void InputManager::onScroll(double offsetX, double offsetY) {
 }
 
 void InputManager::onMouseButton(int button, int action, int mods) {
+    camera.onMouseButton(button, action, mods);
+
     if (action != GLFW_PRESS)
         return;
 

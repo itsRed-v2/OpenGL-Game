@@ -59,19 +59,14 @@ int main() {
 
     glfwSwapInterval(1);
 
-    // Instantiate FPS counter
     FpsCounter fpsCounter(window, 0.5);
 
-    // Instantiate camera
     Camera camera(window);
-    camera.position = glm::vec3(0.0, 13.0, 0.0);
-
-    // Instantiate world and hud
+    Player player(camera, glm::vec3(0.0, 11.0, 0.0));
     World world;
     Hud hud(window);
 
-    // Instantiate input manager
-    InputManager input(window, world, camera, hud);
+    InputManager input(window, world, camera, player, hud);
     glfwSetWindowUserPointer(window, &input);
 
     // Register GLFW callbacks
@@ -99,7 +94,7 @@ int main() {
     while (!glfwWindowShouldClose(window)) {
         fpsCounter.frameBegin();
         double deltaTime = fpsCounter.getLastFrameDuration();
-        camera.processInputs(window, static_cast<float>(deltaTime));
+        player.processMovement(window, world, static_cast<float>(deltaTime));
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 

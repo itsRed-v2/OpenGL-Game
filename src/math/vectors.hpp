@@ -1,8 +1,9 @@
 #ifndef VECTORS_HPP
 #define VECTORS_HPP
 
-#include <cstdint>
 #include <unordered_map>
+
+#include <glm/glm.hpp>
 
 #include "blockface.hpp"
 
@@ -15,6 +16,7 @@ struct Vec3i {
 
     Vec3i() = delete;
     Vec3i(int32_t x, int32_t y, int32_t z);
+    explicit Vec3i(glm::vec3 pos);
 
     bool operator==(const Vec3i &other) const;
 
