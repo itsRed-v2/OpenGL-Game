@@ -20,12 +20,11 @@
 #define FLYING_VERTICAL_DRAG 8.0f
 #define VERTICAL_FLYING_SPEED 80.0f
 #define FLYING_SPEED_MULTIPLICATOR 3.0f
+#define GRAVITY_STRENGTH 30.0f
 
 #define BOX_WIDTH 0.7
 #define BOX_HEIGHT 1.8
 #define CAMERA_HEIGHT 1.6
-
-constexpr glm::vec3 GRAVITY(0.0f, -30.0f, 0.0f);
 
 Player::Player(Camera &camera, const glm::vec3 position): position(position), camera(camera) {
     camera.position = position + glm::vec3(0, CAMERA_HEIGHT, 0);
@@ -81,14 +80,8 @@ void Player::onKey(const int key, const int action) {
     }
 }
 
-void Player::processMovement(GLFWwindow* window, const World &world, const float deltaTime) {
-    // === Jumping handling ===
-    if (isOnGround && glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
-        velocity.y = JUMPING_VELOCITY;
-        isOnGround = false;
-    }
-
-    // === Horizontal movement control logic ===
+inline glm::vec3 Player::calculateUserAcceleration(GLFWwindow *window) const {
+    // === Horizontal movement control ===
 
     // The camera-relative movement vector
     glm::vec3 relativeControl(0.0, 0.0, 0.0);
@@ -119,7 +112,7 @@ void Player::processMovement(GLFWwindow* window, const World &world, const float
         controlAcceleration *= controlCoefficient;
     }
 
-    // === Vertical flying control logic ===
+    // === Vertical flying control ===
 
     if (isFlying) {
         float verticalControl = 0.0f;
@@ -132,8 +125,10 @@ void Player::processMovement(GLFWwindow* window, const World &world, const float
         controlAcceleration.y = verticalControl * VERTICAL_FLYING_SPEED;
     }
 
-    // === Movement drag logic ===
+    return controlAcceleration;
+}
 
+inline glm::vec3 Player::calculateDragAcceleration(const float deltaTime) const {
     const float horizontalDragCoef = isOnGround ? GROUND_COEFFICIENT : AIR_COEFFICIENT;
     const float verticalDragCoef = isFlying ? FLYING_VERTICAL_DRAG : VERTICAL_DRAG;
     glm::vec3 drag = -velocity * glm::vec3(horizontalDragCoef, verticalDragCoef, horizontalDragCoef);
@@ -141,11 +136,27 @@ void Player::processMovement(GLFWwindow* window, const World &world, const float
         if (abs(drag[i] * deltaTime) > abs(velocity[i]))
             drag[i] = -velocity[i];
     }
+    return drag;
+}
 
-    // === Applying computed accelerations ===
-    const glm::vec3 effectiveGravity = isFlying ? glm::vec3(0.0f) : GRAVITY;
-    velocity += (controlAcceleration + drag + effectiveGravity) * deltaTime;
+inline glm::vec3 Player::calculateGravityAcceleration() const {
+    return isFlying ? glm::vec3(0.0f) : glm::vec3(0.0f, -GRAVITY_STRENGTH, 0.0f);
+}
 
+void Player::processMovement(GLFWwindow* window, const World &world, const float deltaTime) {
+    // Jumping handling
+    if (isOnGround && glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
+        velocity.y = JUMPING_VELOCITY;
+        isOnGround = false;
+    }
+
+    // Acceleration calculations
+    const glm::vec3 controlAcceleration = calculateUserAcceleration(window);
+    const glm::vec3 drag = calculateDragAcceleration(deltaTime);
+    const glm::vec3 gravity = calculateGravityAcceleration();
+    velocity += (controlAcceleration + drag + gravity) * deltaTime;
+
+    // Movement calculations
     moveWithCollisions(world, deltaTime);
     camera.position = position + glm::vec3(0.0, CAMERA_HEIGHT, 0.0);
 }

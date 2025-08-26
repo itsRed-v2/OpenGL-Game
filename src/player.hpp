@@ -24,6 +24,10 @@ class Player {
     void moveWithCollisions(const World &world, float deltaTime);
     [[nodiscard]] vector<AABB> gatherSurroundingCollisionBoxes(const World &world, glm::vec3 movement) const;
 
+    [[nodiscard]] inline glm::vec3 calculateUserAcceleration(GLFWwindow* window) const;
+    [[nodiscard]] inline glm::vec3 calculateDragAcceleration(float deltaTime) const;
+    [[nodiscard]] inline glm::vec3 calculateGravityAcceleration() const;
+
     void setFlying(bool flying);
 
 public:
