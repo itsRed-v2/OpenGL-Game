@@ -50,6 +50,8 @@ void InputManager::onKey(int key, int scancode, int action, int mods) {
             glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
         }
     }
+
+    player.onKey(key, action);
 }
 
 void InputManager::onFrameBufferResize(int width, int height) {

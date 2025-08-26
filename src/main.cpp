@@ -62,7 +62,7 @@ int main() {
     FpsCounter fpsCounter(window, 0.5);
 
     Camera camera(window);
-    Player player(camera, glm::vec3(0.0, 11.0, 0.0));
+    Player player(camera, glm::vec3(0.0, 12.0, 0.0));
     World world;
     Hud hud(window);
 
@@ -93,8 +93,9 @@ int main() {
 
     while (!glfwWindowShouldClose(window)) {
         fpsCounter.frameBegin();
-        double deltaTime = fpsCounter.getLastFrameDuration();
-        player.processMovement(window, world, static_cast<float>(deltaTime));
+        auto deltaTime = static_cast<float>(fpsCounter.getLastFrameDuration());
+        player.processMovement(window, world, deltaTime);
+        camera.update(deltaTime);
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 

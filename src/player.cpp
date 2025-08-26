@@ -6,12 +6,26 @@
 #include "world/block.hpp"
 #include "math/direction.hpp"
 
-#define MOVEMENT_SPEED 5.0f
+#define abs(x) ((x) >= 0 ? (x) : -(x))
+
 #define MOUSE_SENSITIVITY 0.1f
+#define DOUBLE_TAP_THRESHOLD 0.2
+
+#define JUMPING_VELOCITY 9.0f
+#define WALKING_SPEED 5.0f
+#define RUNNING_SPEED (1.5f * WALKING_SPEED)
+#define GROUND_COEFFICIENT 10.0f
+#define AIR_COEFFICIENT 2.0f
+#define VERTICAL_DRAG 0.25f
+#define FLYING_VERTICAL_DRAG 8.0f
+#define VERTICAL_FLYING_SPEED 80.0f
+#define FLYING_SPEED_MULTIPLICATOR 3.0f
 
 #define BOX_WIDTH 0.7
 #define BOX_HEIGHT 1.8
 #define CAMERA_HEIGHT 1.6
+
+constexpr glm::vec3 GRAVITY(0.0f, -30.0f, 0.0f);
 
 Player::Player(Camera &camera, const glm::vec3 position): position(position), camera(camera) {
     camera.position = position + glm::vec3(0, CAMERA_HEIGHT, 0);
@@ -46,11 +60,11 @@ void Player::onCursorMove(const double newX, const double newY) {
     cursorX = newX;
     cursorY = newY;
 
-    yaw += deltaX * MOUSE_SENSITIVITY;
+    yaw += static_cast<float>(deltaX) * MOUSE_SENSITIVITY;
     if (yaw < -180) yaw += 360;
     if (yaw > 180) yaw -= 360;
 
-    pitch += deltaY * MOUSE_SENSITIVITY;
+    pitch += static_cast<float>(deltaY) * MOUSE_SENSITIVITY;
     if (pitch > 90) pitch = 90;
     if (pitch < -90) pitch = -90;
 
@@ -58,40 +72,91 @@ void Player::onCursorMove(const double newX, const double newY) {
     camera.pitch = pitch;
 }
 
+void Player::onKey(const int key, const int action) {
+    if (key == GLFW_KEY_SPACE && action == GLFW_PRESS) {
+        if (glfwGetTime() - lastSpacePress < DOUBLE_TAP_THRESHOLD) {
+            setFlying(!isFlying);
+        }
+        lastSpacePress = glfwGetTime();
+    }
+}
+
 void Player::processMovement(GLFWwindow* window, const World &world, const float deltaTime) {
-    glm::vec3 relativeVelocity(0.0, 0.0, 0.0);
+    // === Jumping handling ===
+    if (isOnGround && glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
+        velocity.y = JUMPING_VELOCITY;
+        isOnGround = false;
+    }
+
+    // === Horizontal movement control logic ===
+
+    // The camera-relative movement vector
+    glm::vec3 relativeControl(0.0, 0.0, 0.0);
 
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        relativeVelocity.z -= MOVEMENT_SPEED;
+        relativeControl.z -= 1.0f;
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        relativeVelocity.z += MOVEMENT_SPEED;
+        relativeControl.z += 1.0f;
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        relativeVelocity.x -= MOVEMENT_SPEED;
+        relativeControl.x -= 1.0f;
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        relativeVelocity.x += MOVEMENT_SPEED;
-    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
-        relativeVelocity.y += MOVEMENT_SPEED;
-    if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
-        relativeVelocity.y -= MOVEMENT_SPEED;
+        relativeControl.x += 1.0f;
 
-    // rotate the camera-relative velocity vector by yaw degrees around Y-axis to get world-relative movement
+    // rotate the camera-relative vector by yaw degrees around Y-axis to get world-relative vector
     const float radYaw = glm::radians(yaw);
-    velocity = glm::vec3(
-        relativeVelocity.x * cos(radYaw) - relativeVelocity.z * sin(radYaw),
-        relativeVelocity.y,
-        relativeVelocity.x * sin(radYaw) + relativeVelocity.z * cos(radYaw)
+    glm::vec3 controlAcceleration(
+        relativeControl.x * cos(radYaw) - relativeControl.z * sin(radYaw),
+        0,
+        relativeControl.x * sin(radYaw) + relativeControl.z * cos(radYaw)
     );
+    if (controlAcceleration != glm::vec3(0, 0, 0)) {
+        controlAcceleration = glm::normalize(controlAcceleration);
 
-    if (velocity != glm::vec3(0, 0, 0)) {
-        moveWithCollisions(world, deltaTime);
-        camera.position = position + glm::vec3(0.0, CAMERA_HEIGHT, 0.0);
+        float controlCoefficient = isOnGround ? GROUND_COEFFICIENT : AIR_COEFFICIENT;
+        const bool running = glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS;
+        controlCoefficient *= running ? RUNNING_SPEED : WALKING_SPEED;
+        if (isFlying) controlCoefficient *= FLYING_SPEED_MULTIPLICATOR;
+        controlAcceleration *= controlCoefficient;
     }
+
+    // === Vertical flying control logic ===
+
+    if (isFlying) {
+        float verticalControl = 0.0f;
+        if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+            verticalControl += 1.0f;
+        if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS
+                || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS) {
+            verticalControl -= 1.0f;
+        }
+        controlAcceleration.y = verticalControl * VERTICAL_FLYING_SPEED;
+    }
+
+    // === Movement drag logic ===
+
+    const float horizontalDragCoef = isOnGround ? GROUND_COEFFICIENT : AIR_COEFFICIENT;
+    const float verticalDragCoef = isFlying ? FLYING_VERTICAL_DRAG : VERTICAL_DRAG;
+    glm::vec3 drag = -velocity * glm::vec3(horizontalDragCoef, verticalDragCoef, horizontalDragCoef);
+    for (int i = 0; i < 3; i++) {
+        if (abs(drag[i] * deltaTime) > abs(velocity[i]))
+            drag[i] = -velocity[i];
+    }
+
+    // === Applying computed accelerations ===
+    const glm::vec3 effectiveGravity = isFlying ? glm::vec3(0.0f) : GRAVITY;
+    velocity += (controlAcceleration + drag + effectiveGravity) * deltaTime;
+
+    moveWithCollisions(world, deltaTime);
+    camera.position = position + glm::vec3(0.0, CAMERA_HEIGHT, 0.0);
 }
 
 void Player::moveWithCollisions(const World &world, const float deltaTime) {
     const glm::vec3 movement = velocity * deltaTime;
     const Direction3D movementDir = Direction3D::fromVector(movement);
     const vector<AABB> collisionBoxes = gatherSurroundingCollisionBoxes(world, movement);
+
+    // If player is on ground, the variable will be set by the collision check each frame.
+    isOnGround = false;
 
     for (int i = 0; i < 3; i++) { // For each axis
         float maxMovement = movement[i];
@@ -112,6 +177,13 @@ void Player::moveWithCollisions(const World &world, const float deltaTime) {
                         || (faceDistance > 1e-5 && maxMovement > faceDistance)
                         || (faceDistance < -1e-5 && maxMovement < faceDistance)) {
                 maxMovement = faceDistance;
+                velocity[i] = 0; // Collision cancels speed in the axis of the collision
+
+                // if player hits the ground
+                if (axis == Axis::Y && movementDir.y == Direction::NEGATIVE) {
+                    isOnGround = true;
+                    setFlying(false);
+                }
             }
         }
 
@@ -141,4 +213,9 @@ vector<AABB> Player::gatherSurroundingCollisionBoxes(const World &world, const g
         }
     }
     return collisionBoxes;
+}
+
+void Player::setFlying(const bool flying) {
+    isFlying = flying;
+    camera.fovOffset = flying ? +5.0f : 0.0f;
 }

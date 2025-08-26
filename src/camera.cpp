@@ -4,8 +4,6 @@
 
 #include "logger.hpp"
 
-#define MOVEMENT_SPEED 10.0f
-#define MOUSE_SENSITIVITY 0.1f
 #define ZOOM_SENSITIVITY 0.5f
 
 #define NEAR_PLANE 0.1f
@@ -19,32 +17,30 @@ void Camera::updateAspect(GLFWwindow* window) {
     int frameBufferWidth, frameBufferHeight;
     glfwGetFramebufferSize(window, &frameBufferWidth, &frameBufferHeight);
     aspect = static_cast<float>(frameBufferWidth) / static_cast<float>(frameBufferHeight);
-
-    updateProjectionMatrix();
-}
-
-void Camera::updateProjectionMatrix() {
-    projection = glm::perspective(glm::radians(fov), aspect, NEAR_PLANE, FAR_PLANE);
 }
 
 void Camera::onScroll([[maybe_unused]] const double offsetX, const double offsetY) {
-    fov -= offsetY * ZOOM_SENSITIVITY;
-    if (fov < 1.0f) fov = 1.0f;
-    if (fov > 110.0f) fov = 110.0f;
+    baseFov -= static_cast<float>(offsetY) * ZOOM_SENSITIVITY;
+    if (baseFov < 1.0f) baseFov = 1.0f;
+    if (baseFov > 110.0f) baseFov = 110.0f;
 
-    Logger::info(std::format("FOV: {:.2f}", fov));
-    updateProjectionMatrix();
+    Logger::info(std::format("FOV: {:.2f}", baseFov));
 }
 
 void Camera::onMouseButton(const int button, const int action, [[maybe_unused]] const int mods) {
     if (button == GLFW_MOUSE_BUTTON_MIDDLE && action == GLFW_PRESS) {
-        fov = 45.0f;
-        updateProjectionMatrix();
+        baseFov = DEFAULT_FOV;
     }
 }
 
+void Camera::update(const float deltaTime) {
+    const float targetFov = baseFov + fovOffset;
+    const float diff = targetFov - effectiveFov;
+    effectiveFov += diff * std::min(deltaTime * 8.0f, 1.0f);
+}
+
 glm::mat4 Camera::getProjectionMatrix() const {
-    return projection;
+    return glm::perspective(glm::radians(effectiveFov), aspect, NEAR_PLANE, FAR_PLANE);
 }
 
 glm::mat4 Camera::getViewMatrix() const {

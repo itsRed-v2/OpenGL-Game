@@ -15,15 +15,23 @@ class Player {
     double cursorX = 0, cursorY = 0;
     bool shouldSkipNextCursorMove = true;
 
+    bool isOnGround = false;
+    bool isFlying = false;
+    double lastSpacePress = 0.0f;
+
     [[nodiscard]] AABB boundingBox() const;
 
     void moveWithCollisions(const World &world, float deltaTime);
     [[nodiscard]] vector<AABB> gatherSurroundingCollisionBoxes(const World &world, glm::vec3 movement) const;
+
+    void setFlying(bool flying);
+
 public:
     Player(Camera &camera, glm::vec3 position);
 
     void skipNextCursorMove();
     void onCursorMove(double newX, double newY);
+    void onKey(int key, int action);
     void processMovement(GLFWwindow* window, const World &world, float deltaTime);
 };
 
