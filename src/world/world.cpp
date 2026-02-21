@@ -93,7 +93,7 @@ void World::draw(const Camera &camera, const Atlas &atlas) {
     }
 
     // Ray casting for selected cube highlight
-    Ray camRay(camera.position, camera.getFrontVector());
+    Ray camRay(camera.getPosition(), camera.getFrontVector());
     std::optional<HitResult> hit = rayCast(camRay);
     if (hit) {
         Vec3i blockHit = hit->blockPos;

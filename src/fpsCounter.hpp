@@ -5,23 +5,30 @@
 #include <GLFW/glfw3.h>
 #include <string>
 
+#include "tickCounter.hpp"
+
 using namespace std;
 
 class FpsCounter {
     GLFWwindow* window;
+    TickCounter& tickCounter;
     const double sampleDuration;
-    double lastSampleStart = glfwGetTime();
-    unsigned int currentFrameCount = 0;
-    double lastFrameBegin = glfwGetTime();
+
+    double currentSampleStart = glfwGetTime();
+    unsigned int sampleFrameCount = 0;
+    double currentFrameBegin = glfwGetTime();
     double lastFrameDuration = 0.0;
     double sampleTotalDrawTime = 0.0;
 
 public:
-    FpsCounter(GLFWwindow* window, double sampleDuration);
+    FpsCounter(GLFWwindow* window, TickCounter& tickCounter, double sampleDuration);
     void frameBegin();
     void frameDone();
 
     [[nodiscard]] double getLastFrameDuration() const;
+
+private:
+    void nextSample();
 };
 
 #endif

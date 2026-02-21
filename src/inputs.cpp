@@ -77,7 +77,7 @@ void InputManager::onMouseButton(int button, int action, int mods) {
         return;
 
     if (button == GLFW_MOUSE_BUTTON_LEFT) {
-        Ray camRay(camera.position, camera.getFrontVector());
+        Ray camRay(camera.getPosition(), camera.getFrontVector());
         std::optional<HitResult> hit = world.rayCast(camRay);
 
         if (hit) {
@@ -90,7 +90,7 @@ void InputManager::onMouseButton(int button, int action, int mods) {
     }
 
     if (button == GLFW_MOUSE_BUTTON_RIGHT) {
-        Ray camRay(camera.position, camera.getFrontVector());
+        Ray camRay(camera.getPosition(), camera.getFrontVector());
         std::optional<HitResult> hit = world.rayCast(camRay);
 
         if (hit) {

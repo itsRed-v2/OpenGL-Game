@@ -7,6 +7,7 @@
 
 class Player {
     glm::vec3 position;
+    glm::vec3 lastPosition = position;
     glm::vec3 velocity = glm::vec3(0.0, 0.0, 0.0);
     float yaw = 0;
     float pitch = 0;
@@ -21,11 +22,11 @@ class Player {
 
     [[nodiscard]] AABB boundingBox() const;
 
-    void moveWithCollisions(const World &world, float deltaTime);
+    void moveWithCollisions(const World &world);
     [[nodiscard]] vector<AABB> gatherSurroundingCollisionBoxes(const World &world, glm::vec3 movement) const;
 
     [[nodiscard]] inline glm::vec3 calculateUserAcceleration(GLFWwindow* window) const;
-    [[nodiscard]] inline glm::vec3 calculateDragAcceleration(float deltaTime) const;
+    [[nodiscard]] inline glm::vec3 calculateDragAcceleration() const;
     [[nodiscard]] inline glm::vec3 calculateGravityAcceleration() const;
 
     void setFlying(bool flying);
@@ -36,7 +37,7 @@ public:
     void skipNextCursorMove();
     void onCursorMove(double newX, double newY);
     void onKey(int key, int action);
-    void processMovement(GLFWwindow* window, const World &world, float deltaTime);
+    void tickMovement(GLFWwindow* window, const World &world);
 };
 
 #endif //VOXELS_PLAYER_HPP

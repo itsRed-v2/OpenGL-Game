@@ -11,6 +11,7 @@ add_executable(Voxels
         src/main.cpp
         src/shader.cpp
         src/fpsCounter.cpp
+        src/tickCounter.cpp
         src/logger.cpp
         src/camera.cpp
         src/inputs.cpp

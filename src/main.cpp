@@ -6,6 +6,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include "fpsCounter.hpp"
+#include "tickCounter.hpp"
 #include "camera.hpp"
 #include "world/world.hpp"
 #include "inputs.hpp"
@@ -59,7 +60,8 @@ int main() {
 
     glfwSwapInterval(1);
 
-    FpsCounter fpsCounter(window, 0.5);
+    TickCounter tickCounter;
+    FpsCounter fpsCounter(window, tickCounter, 0.5);
 
     Camera camera(window);
     Player player(camera, glm::vec3(0.0, 12.0, 0.0));
@@ -92,10 +94,19 @@ int main() {
     atlas.registerTextureUV("grass_sides", {16, 0, 16, 16});
 
     while (!glfwWindowShouldClose(window)) {
+        // TICKING BEGINNING
+        if (tickCounter.shouldTick()) {
+            tickCounter.tickBegin();
+            player.tickMovement(window, world);
+            tickCounter.tickDone();
+        }
+        // TICKING END
+
+        // RENDERING BEGINNING
         fpsCounter.frameBegin();
         auto deltaTime = static_cast<float>(fpsCounter.getLastFrameDuration());
-        player.processMovement(window, world, deltaTime);
-        camera.update(deltaTime);
+        auto tickDelta = static_cast<float>(tickCounter.calculateTickDelta());
+        camera.update(deltaTime, tickDelta);
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -106,6 +117,7 @@ int main() {
         hud.draw();
 
         fpsCounter.frameDone();
+        // RENDERING END
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
